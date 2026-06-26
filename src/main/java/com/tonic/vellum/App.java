@@ -85,6 +85,9 @@ public final class App {
             terminal = Terminals.system();
         }
         running = true;
+        // Restore the terminal even if the process is killed (the finally below does not run on SIGTERM).
+        Thread restoreHook = new Thread(terminal::restore, "vellum-restore");
+        Runtime.getRuntime().addShutdownHook(restoreHook);
         try {
             terminal.setResizeListener(() -> resizePending = true);
             terminal.enterRawMode();
@@ -101,13 +104,27 @@ public final class App {
             loop();
         } finally {
             shutdownScheduler();
+            try {
+                root.unmountAsRoot();
+            } catch (Throwable t) {
+                handleError(t);
+            }
             terminal.showCursor();
             terminal.flush();
             terminal.restore();
+            removeShutdownHook(restoreHook);
             current = null;
             if (errorHandler == null && firstUnhandledError != null) {
                 firstUnhandledError.printStackTrace();
             }
+        }
+    }
+
+    private static void removeShutdownHook(Thread hook) {
+        try {
+            Runtime.getRuntime().removeShutdownHook(hook);
+        } catch (IllegalStateException shuttingDown) {
+            // the JVM is already shutting down; the hook will run and is idempotent
         }
     }
 
@@ -322,6 +339,11 @@ public final class App {
         public boolean isOnFocusPath(Section section) {
             return focus.isOnFocusPath(section);
         }
+
+        @Override
+        public void refreshFocus() {
+            focus.refresh();
+        }
     }
 
     private final class OverlayHandleImpl implements OverlayHandle {
@@ -383,9 +405,7 @@ public final class App {
 
         public Builder focusOrder(Section... targets) {
             this.focusOrder.clear();
-            for (Section t : targets) {
-                this.focusOrder.add(t);
-            }
+            this.focusOrder.addAll(Arrays.asList(targets));
             return this;
         }
 

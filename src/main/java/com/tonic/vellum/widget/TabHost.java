@@ -65,6 +65,7 @@ public final class TabHost extends Section implements FocusContainer {
             mount(incoming);
             redrawSubtree(incoming);
             requestRedraw();
+            refreshFocus(); // the active focus target changed; keep focus on the new content
         }
     }
 
@@ -79,7 +80,7 @@ public final class TabHost extends Section implements FocusContainer {
     @Override
     protected List<Section> children() {
         return contents.isEmpty()
-                ? Collections.<Section>emptyList()
+                ? Collections.emptyList()
                 : Collections.singletonList(contents.get(active));
     }
 

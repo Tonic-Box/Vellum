@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -162,6 +163,29 @@ class AppRunLoopTest {
 
         assertFalse(ui.isAlive());
         assertEquals("vellum-ui-test", taskThread.get().getName());
-        assertFalse(term.output.length() == 0, "initial paint should have produced output");
+        assertNotEquals(0, term.output.length(), "initial paint should have produced output");
+    }
+
+    @Test
+    void onUnmountFiresOnQuit() throws Exception {
+        AtomicInteger unmounts = new AtomicInteger();
+        Section root = new Section() {
+            @Override
+            protected void render(Canvas canvas) { }
+
+            @Override
+            protected void onUnmount() {
+                unmounts.incrementAndGet();
+            }
+        };
+        FakeTerminal term = new FakeTerminal(10, 3);
+        App app = App.builder().root(root).focusOrder(root).onQuitKey('q').useTerminal(term).build();
+
+        Thread ui = runInBackground(app);
+        term.send(KeyEvent.character('q'));
+        ui.join(2000);
+
+        assertFalse(ui.isAlive());
+        assertEquals(1, unmounts.get(), "the live tree is unmounted on quit");
     }
 }

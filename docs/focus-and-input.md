@@ -51,7 +51,9 @@ content is on the focus path and receives keys first.
 
 A container's `advanceFocus` decides its Tab behavior: `TabHost` returns false so Tab crosses
 panes, while [Form](widgets.md) cycles Tab among its own fields. Field-level
-`onFocusGained`/`onFocusLost` fire as internal focus moves.
+`onFocusGained`/`onFocusLost` fire as internal focus moves. A container that changes its
+active target on its own (e.g. `TabHost.select`) calls the protected `Section.refreshFocus()`
+so the focus path, key routing, and cursor follow the new target.
 
 ## Forms
 

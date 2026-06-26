@@ -15,4 +15,7 @@ interface Host {
 
     /** True if the given section is currently on the focus path. */
     boolean isOnFocusPath(Section section);
+
+    /** Recompute the focus path after a container changed its active focus target. */
+    void refreshFocus();
 }

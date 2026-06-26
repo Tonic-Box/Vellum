@@ -10,6 +10,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BooleanSupplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -51,6 +52,17 @@ class TabHostIntegrationTest {
         Thread.sleep(30); // let the loop process the last consumed key
     }
 
+    private static boolean await(BooleanSupplier cond, long ms) throws InterruptedException {
+        long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(ms);
+        while (System.nanoTime() < deadline) {
+            if (cond.getAsBoolean()) {
+                return true;
+            }
+            Thread.sleep(5);
+        }
+        return false;
+    }
+
     @Test
     void onlyActiveTabMountsAtStartup() throws Exception {
         Tab a = new Tab();
@@ -79,14 +91,18 @@ class TabHostIntegrationTest {
 
         Thread ui = run(app);
         term.send(KeyEvent.special(Key.RIGHT)); // A -> B
-        term.send(KeyEvent.character('q'));
-        ui.join(2000);
+        assertTrue(await(() -> b.mounts.get() == 1, 2000), "tab switched");
 
+        // assert the switch invariant before quit (which itself unmounts the live tree)
         assertEquals(1, a.mounts.get());
         assertEquals(1, a.unmounts.get());
-        assertEquals(1, b.mounts.get());
         assertEquals(0, b.unmounts.get());
         assertEquals(1, tabs.active());
+
+        term.send(KeyEvent.character('q'));
+        ui.join(2000);
+        assertFalse(ui.isAlive());
+        assertEquals(1, b.unmounts.get(), "active tab is unmounted on quit");
     }
 
     @Test

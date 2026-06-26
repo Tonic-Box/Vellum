@@ -67,6 +67,19 @@ final class FocusManager {
         return top().focused();
     }
 
+    /** Recompute the active scope's path after a container changed its active focus target. */
+    void refresh() {
+        FocusScope scope = top();
+        Section before = scope.focused();
+        scope.recomputePath();
+        Section after = scope.focused();
+        if (after != before) {
+            lose(before);
+            gain(after);
+            host.requestRepaint();
+        }
+    }
+
     /** Dispatch a key: deepest focus-path node first, then bubble, then focus navigation. */
     void dispatchKey(KeyEvent key) {
         FocusScope scope = top();

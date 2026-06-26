@@ -20,6 +20,16 @@ public class ScrollSection extends Section {
     private final Viewport viewport = new Viewport();
     private Style style = Style.NORMAL;
     private boolean followTail = false;
+    private int maxLines = 0; // 0 = unlimited
+
+    /** Cap the retained lines, dropping the oldest beyond {@code max}; 0 means unlimited. */
+    public ScrollSection maxLines(int max) {
+        this.maxLines = Math.max(0, max);
+        trim();
+        displayDirty = true;
+        requestRedraw();
+        return this;
+    }
 
     private boolean wrap;
     private List<String> displayLines = new ArrayList<>();
@@ -48,6 +58,7 @@ public class ScrollSection extends Section {
     public ScrollSection setLines(List<String> newLines) {
         lines.clear();
         lines.addAll(newLines);
+        trim();
         displayDirty = true;
         if (followTail) {
             scrollToBottom();
@@ -59,11 +70,18 @@ public class ScrollSection extends Section {
     /** Append one line; pins to the bottom when following the tail. */
     protected void appendLine(String line) {
         lines.add(line);
+        trim();
         displayDirty = true;
         if (followTail) {
             scrollToBottom();
         }
         requestRedraw();
+    }
+
+    private void trim() {
+        if (maxLines > 0 && lines.size() > maxLines) {
+            lines.subList(0, lines.size() - maxLines).clear();
+        }
     }
 
     public int lineCount() {

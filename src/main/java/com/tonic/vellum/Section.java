@@ -100,6 +100,18 @@ public abstract class Section {
         }
     }
 
+    /**
+     * Notify the framework that this container changed its active focus target so the focus
+     * path, key routing, and cursor track the new target. Call on the UI thread after the
+     * change (containers implementing {@link com.tonic.vellum.focus.FocusContainer}).
+     */
+    protected final void refreshFocus() {
+        if (host != null) {
+            host.assertUiThread();
+            host.refreshFocus();
+        }
+    }
+
     /** True if this section currently holds input focus (is on the focus path). */
     public final boolean isFocused() {
         return host != null && host.isOnFocusPath(this);
@@ -192,6 +204,17 @@ public abstract class Section {
         onMount();
         for (Section child : children()) {
             mount(child);
+        }
+    }
+
+    /** Unmount the live tree (children depth-first, then this root) at shutdown. */
+    void unmountAsRoot() {
+        for (Section child : children()) {
+            unmount(child);
+        }
+        if (mounted) {
+            mounted = false;
+            onUnmount();
         }
     }
 

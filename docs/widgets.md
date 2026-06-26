@@ -98,6 +98,7 @@ scrolling up turns it off, End turns it back on.
 | `ScrollSection setLines(List<String>)` | Replace all lines. |
 | `ScrollSection style(Style)` | Text style. |
 | `ScrollSection wrap(boolean)` | Word-wrap; scrolling then operates over display lines. |
+| `ScrollSection maxLines(int)` | Cap retained lines, dropping the oldest; 0 = unlimited. |
 | `int lineCount()` | Number of logical lines. |
 | `int scrollTop()` | Index of the first visible line. |
 
@@ -105,8 +106,9 @@ Subclasses append lines with the protected `appendLine(String)`.
 
 ## LogSection
 
-A `ScrollSection` that follows the tail by default, with a public append for feeding lines
-(typically from a background thread via `App.post`).
+A `ScrollSection` that follows the tail by default and retains a bounded number of lines
+(`LogSection.DEFAULT_MAX_LINES`, oldest dropped); call `maxLines(0)` for unlimited. Append
+lines (typically from a background thread via `App.post`).
 
 ```java
 app.post(() -> logs.append(line));
