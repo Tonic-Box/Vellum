@@ -3,7 +3,6 @@ package com.tonic.vellum.widget;
 import com.tonic.vellum.Canvas;
 import com.tonic.vellum.KeyResult;
 import com.tonic.vellum.geom.Rect;
-import com.tonic.vellum.input.Key;
 import com.tonic.vellum.input.KeyEvent;
 import com.tonic.vellum.style.Style;
 
@@ -89,7 +88,7 @@ public final class Button extends SingleRowSection {
      */
     @Override
     protected KeyResult onKey(KeyEvent key) {
-        if (key.is(Key.ENTER) || (key.is(Key.CHAR) && key.ch() == ' ')) {
+        if (Keys.isActivation(key)) {
             onActivate.run();
             return KeyResult.CONSUMED;
         }

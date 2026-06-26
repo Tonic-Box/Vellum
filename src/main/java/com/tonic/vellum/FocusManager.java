@@ -72,10 +72,7 @@ final class FocusManager {
         FocusScope scope = top();
         Section before = scope.focused();
         scope.recomputePath();
-        Section after = scope.focused();
-        if (after != before) {
-            lose(before);
-            gain(after);
+        if (applyFocusChange(scope, before)) {
             host.requestRepaint();
         }
     }
@@ -119,11 +116,7 @@ final class FocusManager {
             Section before = scope.focused();
             if (((FocusContainer) target).advanceFocus(forward)) {
                 scope.recomputePath();
-                Section after = scope.focused();
-                if (after != before) {
-                    lose(before);
-                    gain(after);
-                } else {
+                if (!applyFocusChange(scope, before)) {
                     markDirtyWithAncestors(target);
                 }
                 host.requestRepaint();
@@ -139,11 +132,22 @@ final class FocusManager {
         if (newIndex < 0 || newIndex == scope.index) {
             return;
         }
-        lose(scope.focused());
+        Section before = scope.focused();
         scope.index = newIndex;
         scope.recomputePath();
-        gain(scope.focused());
+        applyFocusChange(scope, before);
         host.requestRepaint();
+    }
+
+    /** Fire focus hooks when the deepest focused node changed from {@code before}; report the change. */
+    private boolean applyFocusChange(FocusScope scope, Section before) {
+        Section after = scope.focused();
+        if (after == before) {
+            return false;
+        }
+        lose(before);
+        gain(after);
+        return true;
     }
 
     private void gain(Section section) {

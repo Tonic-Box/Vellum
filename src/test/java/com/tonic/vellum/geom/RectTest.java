@@ -76,4 +76,12 @@ class RectTest {
         assertEquals(new Rect(1, 2, 3, 4).hashCode(), new Rect(1, 2, 3, 4).hashCode());
         assertNotEquals(new Rect(1, 2, 3, 4), new Rect(1, 2, 3, 5));
     }
+
+    @Test
+    void intersectClampsToOverlap() {
+        Rect a = new Rect(0, 0, 10, 10);
+        assertEquals(new Rect(2, 3, 4, 5), a.intersect(new Rect(2, 3, 4, 5)));   // contained
+        assertEquals(new Rect(8, 8, 2, 2), a.intersect(new Rect(8, 8, 10, 10))); // partial overlap
+        assertTrue(a.intersect(new Rect(20, 20, 5, 5)).isEmpty());               // disjoint
+    }
 }

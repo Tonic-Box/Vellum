@@ -44,10 +44,13 @@ final class InputDecoder {
             default:
                 break;
         }
-        if (c < 32) {
+        if (c >= 1 && c < 32) {
             // other control codes: Ctrl + letter (Ctrl-A == 1)
             char letter = (char) ('a' + (c - 1));
             return KeyEvent.character(letter, true, false, false);
+        }
+        if (c == 0) {
+            return KeyEvent.special(Key.UNKNOWN); // NUL / Ctrl-@ has no useful mapping
         }
         return KeyEvent.character((char) c);
     }
@@ -126,25 +129,19 @@ final class InputDecoder {
     /** The modifier digit is the second ';'-separated parameter, if present. */
     private static int parseModifier(String params) {
         int semi = params.indexOf(';');
-        if (semi < 0 || semi + 1 >= params.length()) {
-            return 1;
-        }
-        String tail = params.substring(semi + 1);
-        int end = 0;
-        while (end < tail.length() && Character.isDigit(tail.charAt(end))) {
-            end++;
-        }
-        if (end == 0) {
-            return 1;
-        }
-        return Integer.parseInt(tail.substring(0, end));
+        return semi < 0 ? 1 : parseLeadingInt(params, semi + 1, 1);
     }
 
     private static int leadingNumber(String params) {
-        int end = 0;
-        while (end < params.length() && Character.isDigit(params.charAt(end))) {
+        return parseLeadingInt(params, 0, -1);
+    }
+
+    /** Parse the run of decimal digits starting at {@code from}, or {@code fallback} if none. */
+    private static int parseLeadingInt(String s, int from, int fallback) {
+        int end = from;
+        while (end < s.length() && Character.isDigit(s.charAt(end))) {
             end++;
         }
-        return end == 0 ? -1 : Integer.parseInt(params.substring(0, end));
+        return end == from ? fallback : Integer.parseInt(s.substring(from, end));
     }
 }

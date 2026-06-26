@@ -99,12 +99,9 @@ final class ClippedCanvas implements Canvas {
 
     @Override
     public void fill(Rect area, char c, Style style) {
-        int x0 = Math.max(0, area.x());
-        int y0 = Math.max(0, area.y());
-        int x1 = Math.min(width, area.right());
-        int y1 = Math.min(height, area.bottom());
-        for (int y = y0; y < y1; y++) {
-            for (int x = x0; x < x1; x++) {
+        Rect r = bounds().intersect(area);
+        for (int y = r.y(); y < r.bottom(); y++) {
+            for (int x = r.x(); x < r.right(); x++) {
                 buffer.set(originX + x, originY + y, c, style);
             }
         }
@@ -117,12 +114,7 @@ final class ClippedCanvas implements Canvas {
 
     @Override
     public Canvas clip(Rect sub) {
-        int sx = Math.max(0, sub.x());
-        int sy = Math.max(0, sub.y());
-        int sx1 = Math.min(width, sub.right());
-        int sy1 = Math.min(height, sub.bottom());
-        int w = Math.max(0, sx1 - sx);
-        int h = Math.max(0, sy1 - sy);
-        return new ClippedCanvas(buffer, originX + sx, originY + sy, w, h);
+        Rect r = bounds().intersect(sub);
+        return new ClippedCanvas(buffer, originX + r.x(), originY + r.y(), r.width(), r.height());
     }
 }

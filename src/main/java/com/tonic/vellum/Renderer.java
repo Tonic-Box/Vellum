@@ -1,6 +1,5 @@
 package com.tonic.vellum;
 
-import com.tonic.vellum.style.Color;
 import com.tonic.vellum.style.Style;
 
 /**
@@ -87,12 +86,8 @@ final class Renderer {
         if (s.isDim()) sb.append(";2");
         if (s.isUnderline()) sb.append(";4");
         if (s.isReverse()) sb.append(";7");
-        if (!s.foreground().equals(Color.DEFAULT)) {
-            sb.append(';').append(s.foreground().foregroundSgr());
-        }
-        if (!s.background().equals(Color.DEFAULT)) {
-            sb.append(';').append(s.background().backgroundSgr());
-        }
+        sb.append(';').append(s.foreground().foregroundSgr());
+        sb.append(';').append(s.background().backgroundSgr());
         return sb.append('m').toString();
     }
 }

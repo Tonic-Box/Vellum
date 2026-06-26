@@ -71,6 +71,21 @@ public final class Rect {
     }
 
     /**
+     * Returns the overlap of this rect and {@code other}; the result is empty (zero width or
+     * height) when they do not overlap.
+     *
+     * @param other the rect to intersect with
+     * @return the overlapping rect
+     */
+    public Rect intersect(Rect other) {
+        int x0 = Math.max(x, other.x);
+        int y0 = Math.max(y, other.y);
+        int x1 = Math.min(right(), other.right());
+        int y1 = Math.min(bottom(), other.bottom());
+        return new Rect(x0, y0, x1 - x0, y1 - y0);
+    }
+
+    /**
      * Shrinks this rect on all four sides.
      *
      * @param amount cells to remove from each side; dimensions clamp at zero

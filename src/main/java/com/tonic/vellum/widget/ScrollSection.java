@@ -42,13 +42,18 @@ public class ScrollSection extends Section {
     private int cachedWidth = -1;
 
     /**
-     * Sets whether the view stays pinned to the bottom as lines are appended.
+     * Sets whether the view stays pinned to the bottom as lines are appended. Enabling it
+     * scrolls to the bottom immediately.
      *
      * @param follow {@code true} to follow the tail
      * @return this ScrollSection for chaining
      */
     public ScrollSection followTail(boolean follow) {
         this.followTail = follow;
+        if (follow) {
+            scrollToBottom();
+            requestRedraw();
+        }
         return this;
     }
 
@@ -159,13 +164,18 @@ public class ScrollSection extends Section {
     protected KeyResult onKey(KeyEvent key) {
         switch (key.code()) {
             case UP:        scrollBy(-1); followTail = false; return KeyResult.CONSUMED;
-            case DOWN:      scrollBy(1); return KeyResult.CONSUMED;
+            case DOWN:      scrollBy(1); followTail = atBottom(); return KeyResult.CONSUMED;
             case PAGE_UP:   scrollBy(-viewportHeight()); followTail = false; return KeyResult.CONSUMED;
-            case PAGE_DOWN: scrollBy(viewportHeight()); return KeyResult.CONSUMED;
+            case PAGE_DOWN: scrollBy(viewportHeight()); followTail = atBottom(); return KeyResult.CONSUMED;
             case HOME:      setTop(0); followTail = false; return KeyResult.CONSUMED;
             case END:       setTop(Viewport.maxTop(visibleLines().size(), viewportHeight())); followTail = true; return KeyResult.CONSUMED;
             default:        return KeyResult.UNHANDLED;
         }
+    }
+
+    /** True when the view is scrolled to the last line. */
+    private boolean atBottom() {
+        return viewport.top() == Viewport.maxTop(visibleLines().size(), viewportHeight());
     }
 
     private void scrollToBottom() {

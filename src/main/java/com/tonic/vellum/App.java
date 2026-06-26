@@ -36,7 +36,6 @@ public final class App {
 
     private final Host host = new EngineHost();
     private final Stage stage;
-    private final Section root;
     private final FocusManager focus;
     private final Section initialFocus;
     private final Predicate<KeyEvent> quitPredicate;
@@ -57,7 +56,6 @@ public final class App {
 
     private App(Builder b) {
         this.stage = new Stage(b.root);
-        this.root = stage;
         this.initialFocus = b.initialFocus;
         this.quitPredicate = b.quitPredicate;
         this.errorHandler = b.errorHandler;
@@ -103,10 +101,8 @@ public final class App {
             terminal.enterAlternateScreen();
             terminal.hideCursor();
 
-            TerminalSize size = terminal.size();
-            allocate(size);
-            root.resizeRoot(new Rect(0, 0, size.columns(), size.rows()));
-            root.mountAsRoot(host);
+            applyLayout();
+            stage.mountAsRoot(host);
             focus.start(initialFocus);
             repaint(true);
 
@@ -114,7 +110,7 @@ public final class App {
         } finally {
             shutdownScheduler();
             try {
-                root.unmountAsRoot();
+                stage.unmountAsRoot();
             } catch (Throwable t) {
                 handleError(t);
             }
@@ -259,10 +255,15 @@ public final class App {
     }
 
     private void applyResize() {
+        applyLayout();
+        repaint(true);
+    }
+
+    /** (Re)allocate buffers and lay the tree out to the current terminal size. */
+    private void applyLayout() {
         TerminalSize size = terminal.size();
         allocate(size);
-        root.resizeRoot(new Rect(0, 0, size.columns(), size.rows()));
-        repaint(true);
+        stage.resizeRoot(new Rect(0, 0, size.columns(), size.rows()));
     }
 
     private void allocate(TerminalSize size) {
@@ -275,7 +276,7 @@ public final class App {
     }
 
     private void repaint(boolean full) {
-        renderTree(root, full);
+        renderTree(stage, full);
         String out = renderer.flush(back);
         if (!out.isEmpty()) {
             terminal.write(out);

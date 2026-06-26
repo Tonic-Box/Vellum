@@ -47,13 +47,10 @@ final class Buffer {
 
     /** Reset a sub-rectangle to blank spaces in the default style. */
     void clearRect(Rect area) {
-        int x0 = Math.max(0, area.x());
-        int y0 = Math.max(0, area.y());
-        int x1 = Math.min(width, area.right());
-        int y1 = Math.min(height, area.bottom());
-        for (int y = y0; y < y1; y++) {
+        Rect r = new Rect(0, 0, width, height).intersect(area);
+        for (int y = r.y(); y < r.bottom(); y++) {
             int row = y * width;
-            for (int x = x0; x < x1; x++) {
+            for (int x = r.x(); x < r.right(); x++) {
                 codePoints[row + x] = ' ';
                 styles[row + x] = Style.NORMAL;
             }
@@ -77,10 +74,12 @@ final class Buffer {
     }
 
     int codePointAt(int x, int y) {
+        if (x < 0 || x >= width || y < 0 || y >= height) return ' ';
         return codePoints[y * width + x];
     }
 
     Style styleAt(int x, int y) {
+        if (x < 0 || x >= width || y < 0 || y >= height) return Style.NORMAL;
         return styles[y * width + x];
     }
 }

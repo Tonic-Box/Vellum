@@ -1,9 +1,6 @@
 package com.tonic.vellum.widget;
 
 import com.tonic.vellum.Canvas;
-import com.tonic.vellum.KeyResult;
-import com.tonic.vellum.input.Key;
-import com.tonic.vellum.input.KeyEvent;
 import com.tonic.vellum.style.Style;
 
 import java.util.ArrayList;
@@ -98,23 +95,5 @@ public final class RadioGroup extends AbstractListSection {
     @Override
     protected void onActivate(int index) {
         choose(index);
-    }
-
-    /**
-     * Handles SPACE to choose the option under the cursor; otherwise defers to the base
-     * navigation keys.
-     *
-     * @param key the key event
-     * @return the key handling result
-     */
-    @Override
-    protected KeyResult onKey(KeyEvent key) {
-        if (key.is(Key.CHAR) && key.ch() == ' ') {
-            if (rowCount() > 0) {
-                onActivate(selectedIndex());
-            }
-            return KeyResult.CONSUMED;
-        }
-        return super.onKey(key);
     }
 }

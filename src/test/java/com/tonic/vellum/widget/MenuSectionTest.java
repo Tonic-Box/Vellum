@@ -53,6 +53,15 @@ class MenuSectionTest {
     }
 
     @Test
+    void spaceActivatesSelectedRow() {
+        AtomicInteger chosen = new AtomicInteger(-1);
+        MenuSection menu = new MenuSection("Logs", "Metrics").onSelect(chosen::set);
+        menu.onKey(KeyEvent.special(Key.DOWN));
+        assertEquals(KeyResult.CONSUMED, menu.onKey(KeyEvent.character(' ')));
+        assertEquals(1, chosen.get());
+    }
+
+    @Test
     void unrelatedKeysBubble() {
         MenuSection menu = new MenuSection("A", "B");
         assertEquals(KeyResult.UNHANDLED, menu.onKey(KeyEvent.special(Key.TAB)));

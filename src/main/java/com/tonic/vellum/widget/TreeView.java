@@ -123,7 +123,8 @@ public final class TreeView extends AbstractListSection {
     }
 
     /**
-     * Handles RIGHT and LEFT to expand and collapse, and SPACE to activate the selected row.
+     * Handles RIGHT and LEFT to expand and collapse; other keys defer to the base (arrows,
+     * ENTER/SPACE activation).
      */
     @Override
     protected KeyResult onKey(KeyEvent key) {
@@ -134,12 +135,6 @@ public final class TreeView extends AbstractListSection {
             case LEFT:
                 setExpanded(false);
                 return KeyResult.CONSUMED;
-            case CHAR:
-                if (key.ch() == ' ' && rowCount() > 0) {
-                    onActivate(selectedIndex());
-                    return KeyResult.CONSUMED;
-                }
-                return KeyResult.UNHANDLED;
             default:
                 return super.onKey(key);
         }

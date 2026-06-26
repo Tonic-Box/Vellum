@@ -84,6 +84,19 @@ public final class Constraint {
     public int value() { return value; }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Constraint)) return false;
+        Constraint other = (Constraint) o;
+        return value == other.value && kind == other.kind;
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * kind.hashCode() + value;
+    }
+
+    @Override
     public String toString() {
         return "Constraint[" + kind + " " + value + "]";
     }

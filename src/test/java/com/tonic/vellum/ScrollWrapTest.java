@@ -1,12 +1,30 @@
 package com.tonic.vellum;
 
 import com.tonic.vellum.geom.Rect;
+import com.tonic.vellum.input.Key;
+import com.tonic.vellum.input.KeyEvent;
 import com.tonic.vellum.widget.LogSection;
+import com.tonic.vellum.widget.ScrollSection;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ScrollWrapTest {
+
+    /** A follow-tail scroll whose protected append/key handling are reachable via subclassing. */
+    private static final class KeyableScroll extends ScrollSection {
+        KeyableScroll() {
+            followTail(true);
+        }
+
+        void add(String line) {
+            appendLine(line);
+        }
+
+        void key(Key code) {
+            onKey(KeyEvent.special(code));
+        }
+    }
 
     private static String row(Buffer buf, int y) {
         StringBuilder sb = new StringBuilder();
@@ -70,5 +88,43 @@ class ScrollWrapTest {
             log.append("x");
         }
         assertEquals(LogSection.DEFAULT_MAX_LINES, log.lineCount());
+    }
+
+    @Test
+    void scrollingToBottomReArmsFollowTail() {
+        KeyableScroll log = new KeyableScroll();
+        ((Section) log).resizeRoot(new Rect(0, 0, 10, 3)); // 3 visible rows
+        for (int i = 0; i < 10; i++) {
+            log.add("line" + i);
+        }
+        assertEquals(7, log.scrollTop()); // followed to the bottom (10 lines, 3 visible)
+
+        log.key(Key.UP); // scrolling up stops following
+        int afterUp = log.scrollTop();
+        log.add("a");
+        assertEquals(afterUp, log.scrollTop(), "append must not pin while not following");
+
+        for (int i = 0; i < 5; i++) {
+            log.key(Key.DOWN); // scroll back to the bottom; follow re-arms there
+        }
+        int atBottom = log.scrollTop();
+        log.add("b");
+        assertTrue(log.scrollTop() > atBottom, "append pins again after scrolling to the bottom");
+    }
+
+    @Test
+    void followTailSetterPinsToBottom() {
+        KeyableScroll log = new KeyableScroll();
+        ((Section) log).resizeRoot(new Rect(0, 0, 10, 3));
+        for (int i = 0; i < 10; i++) {
+            log.add("line" + i);
+        }
+        assertEquals(7, log.scrollTop());
+
+        log.key(Key.UP); // stop following and scroll up
+        assertEquals(6, log.scrollTop());
+
+        log.followTail(true); // re-enabling pins to the bottom immediately
+        assertEquals(7, log.scrollTop());
     }
 }

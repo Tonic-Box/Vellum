@@ -105,4 +105,12 @@ class LayoutSolverTest {
                     "children must tile the full extent");
         }
     }
+
+    @Test
+    void constraintEqualityAndHashCode() {
+        assertEquals(Constraint.fixed(3), Constraint.fixed(3));
+        assertEquals(Constraint.fixed(3).hashCode(), Constraint.fixed(3).hashCode());
+        assertNotEquals(Constraint.fixed(3), Constraint.fixed(4));
+        assertNotEquals(Constraint.fixed(3), Constraint.percent(3)); // same value, different kind
+    }
 }

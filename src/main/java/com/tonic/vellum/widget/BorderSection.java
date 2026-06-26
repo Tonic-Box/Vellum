@@ -65,6 +65,7 @@ public final class BorderSection extends Section {
      */
     public BorderSection title(String title) {
         this.title = title;
+        requestRedraw();
         return this;
     }
 
@@ -76,6 +77,7 @@ public final class BorderSection extends Section {
      */
     public BorderSection focusedStyle(Style style) {
         this.focusedStyle = style;
+        requestRedraw();
         return this;
     }
 
@@ -87,6 +89,7 @@ public final class BorderSection extends Section {
      */
     public BorderSection unfocusedStyle(Style style) {
         this.unfocusedStyle = style;
+        requestRedraw();
         return this;
     }
 

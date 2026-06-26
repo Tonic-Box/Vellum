@@ -100,7 +100,7 @@ class RenderingCoreTest {
         c.put(2, 0, 'c', Style.NORMAL);
         String out = r.flush(back);
 
-        assertEquals(1, countOccurrences(out, ";31m"));
+        assertEquals(1, countOccurrences(out, ";31"));
     }
 
     @Test
@@ -116,6 +116,16 @@ class RenderingCoreTest {
 
         assertTrue(out.contains("38;2;255;128;0"), "truecolor foreground SGR");
         assertTrue(out.contains("48;5;200"), "256-color background SGR");
+    }
+
+    @Test
+    void bufferReadersIgnoreOutOfRange() {
+        Buffer b = new Buffer(2, 2);
+        assertEquals(' ', b.codePointAt(-1, 0));
+        assertEquals(' ', b.codePointAt(5, 0));
+        assertEquals(' ', b.codePointAt(0, 9));
+        assertEquals(Style.NORMAL, b.styleAt(-1, -1));
+        assertEquals(Style.NORMAL, b.styleAt(10, 10));
     }
 
     /** Count CSI sequences whose final byte is 'H' (cursor moves), vs 'm' (style). */

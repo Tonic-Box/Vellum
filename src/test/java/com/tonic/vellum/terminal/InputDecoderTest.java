@@ -94,6 +94,11 @@ class InputDecoderTest {
     }
 
     @Test
+    void nulByteDecodesToUnknown() {
+        assertEquals(Key.UNKNOWN, decode(0).code()); // NUL has no Ctrl-letter mapping
+    }
+
+    @Test
     void timeoutReturnsNull() {
         assertNull(InputDecoder.readKey(source(), 5));
     }
