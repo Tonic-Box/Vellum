@@ -2,7 +2,7 @@
 
 [Back to index](index.md)
 
-This builds the demo program (`com.tonic.vellum.examples.DashboardDemo`) one step at a
+This builds the demo program (`com.tonic.examples.DashboardDemo`) one step at a
 time: a left menu driving a right-hand tabbed view, with a header and status bar, a
 live-updating log, and a metrics panel on a timer.
 
@@ -349,7 +349,7 @@ public class Dashboard {
   `post`.
 
 This is the finished program. The shipped version, with a richer log feeder, is
-`com.tonic.vellum.examples.DashboardDemo`. Run it from a real terminal:
+`com.tonic.examples.DashboardDemo`. Run it from a real terminal:
 
 ```
 ./gradlew run --console=plain

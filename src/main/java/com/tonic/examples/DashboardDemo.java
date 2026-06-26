@@ -1,4 +1,4 @@
-package com.tonic.vellum.examples;
+package com.tonic.examples;
 
 import com.tonic.vellum.App;
 import com.tonic.vellum.Canvas;

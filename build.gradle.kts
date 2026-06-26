@@ -32,7 +32,7 @@ tasks.withType<JavaCompile> {
 }
 
 application {
-    mainClass.set("com.tonic.vellum.examples.DashboardDemo")
+    mainClass.set("com.tonic.examples.DashboardDemo")
 }
 
 tasks.test {
