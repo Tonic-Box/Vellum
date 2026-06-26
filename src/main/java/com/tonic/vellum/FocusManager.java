@@ -33,17 +33,17 @@ final class FocusManager {
         }
         scope.index = indexOf(scope, initial, 0);
         scope.recomputePath();
-        gain(scope.current());
+        gain(scope.focused());
     }
 
     /** Push a modal focus scope (e.g. for an overlay) and focus its initial target. */
     void pushScope(List<Section> order, Navigation navigation, Section initial) {
-        lose(top().current());
+        lose(top().focused());
         FocusScope scope = new FocusScope(order, navigation);
         scope.index = order.isEmpty() ? -1 : indexOf(scope, initial, 0);
         scopes.push(scope);
         scope.recomputePath();
-        gain(scope.current());
+        gain(scope.focused());
         host.requestRepaint();
     }
 
@@ -53,8 +53,8 @@ final class FocusManager {
             return;
         }
         FocusScope removed = scopes.pop();
-        lose(removed.current());
-        gain(top().current());
+        lose(removed.focused());
+        gain(top().focused());
         host.requestRepaint();
     }
 
@@ -102,12 +102,20 @@ final class FocusManager {
             return;
         }
         Section target = scope.current();
-        if (target instanceof FocusContainer
-                && ((FocusContainer) target).advanceFocus(forward)) {
-            scope.recomputePath();
-            markDirtyWithAncestors(target);
-            host.requestRepaint();
-            return;
+        if (target instanceof FocusContainer) {
+            Section before = scope.focused();
+            if (((FocusContainer) target).advanceFocus(forward)) {
+                scope.recomputePath();
+                Section after = scope.focused();
+                if (after != before) {
+                    lose(before);
+                    gain(after);
+                } else {
+                    markDirtyWithAncestors(target);
+                }
+                host.requestRepaint();
+                return;
+            }
         }
         int n = scope.order.size();
         int next = (((scope.index + (forward ? 1 : -1)) % n) + n) % n;
@@ -118,10 +126,10 @@ final class FocusManager {
         if (newIndex < 0 || newIndex == scope.index) {
             return;
         }
-        lose(scope.current());
+        lose(scope.focused());
         scope.index = newIndex;
         scope.recomputePath();
-        gain(scope.current());
+        gain(scope.focused());
         host.requestRepaint();
     }
 

@@ -1,5 +1,7 @@
 package com.tonic.vellum.style;
 
+import com.tonic.vellum.Maths;
+
 /**
  * A terminal color: the terminal default, one of the 16 named ANSI colors, a 256-color
  * palette index, or 24-bit RGB. Immutable value type; instances compare by value.
@@ -79,7 +81,7 @@ public final class Color {
     }
 
     private static int clamp(int value, int max) {
-        return Math.max(0, Math.min(max, value));
+        return Maths.clamp(value, 0, max);
     }
 
     @Override

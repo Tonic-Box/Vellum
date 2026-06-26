@@ -58,4 +58,18 @@ class MenuSectionTest {
         assertEquals(KeyResult.UNHANDLED, menu.onKey(KeyEvent.special(Key.TAB)));
         assertEquals(KeyResult.UNHANDLED, menu.onKey(KeyEvent.special(Key.LEFT)));
     }
+
+    @Test
+    void scrollsWhenSelectionLeavesTheViewport() {
+        MenuSection menu = new MenuSection("a", "b", "c", "d", "e");
+        menu.select(4);
+        RecordingCanvas c = new RecordingCanvas(10, 3); // only 3 rows visible
+
+        menu.render(c);
+
+        // viewport scrolled so c, d, e show; the selected last item is at the bottom row
+        assertEquals('c', c.charAt(1, 0));
+        assertEquals('e', c.charAt(1, 2));
+        assertEquals(Style.DIM_REVERSE, c.styleAt(1, 2));
+    }
 }

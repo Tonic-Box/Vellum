@@ -25,11 +25,11 @@ layout, focus, dirty-tracking repaint, resize, and thread marshalling.
 
 | Package | Contents |
 |---|---|
-| `com.tonic.vellum` | `Section`, `App`, `Canvas`, `KeyResult`, `Cancellable`, `Placement`, `OverlayHandle`, `CharWidth` |
+| `com.tonic.vellum` | `Section`, `App`, `Canvas`, `KeyResult`, `Cancellable`, `Placement`, `OverlayHandle`, `CharWidth`, `Maths` |
 | `com.tonic.vellum.geom` | `Rect`, `Point` |
 | `com.tonic.vellum.style` | `Style`, `Color` |
 | `com.tonic.vellum.input` | `Key`, `KeyEvent` |
 | `com.tonic.vellum.layout` | `Split`, `Constraint`, `Slot`, `Axis`, `LayoutSolver` |
 | `com.tonic.vellum.focus` | `FocusContainer`, `Navigation` |
 | `com.tonic.vellum.terminal` | `Terminal`, `Terminals`, `TerminalSize` |
-| `com.tonic.vellum.widget` | `MenuSection`, `ScrollSection`, `LogSection`, `LabelSection`, `TextSection`, `TextInput`, `BorderSection`, `StatusBar`, `TabHost`, `Alignment` |
+| `com.tonic.vellum.widget` | Text: `LabelSection`, `TextSection`, `StatusBar`, `TextInput`. Lists: `AbstractListSection`, `MenuSection`, `SelectList`, `Table`, `RadioGroup`. Containers: `BorderSection`, `TabHost`, `Form`. Controls: `Button`, `Checkbox`. Dialogs: `Dialogs`. Indicators: `ProgressBar`, `Spinner`, `Sparkline`. Tree: `TreeView`, `TreeNode`. Scroll: `ScrollSection`, `LogSection`. Base: `SingleRowSection`. `Alignment` |

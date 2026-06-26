@@ -49,6 +49,17 @@ content is on the focus path and receives keys first.
 | `Section activeFocusTarget()` | The current internal target, or null. |
 | `boolean advanceFocus(boolean forward)` | Move internal focus; return false at an edge so the parent advances. |
 
+A container's `advanceFocus` decides its Tab behavior: `TabHost` returns false so Tab crosses
+panes, while [Form](widgets.md) cycles Tab among its own fields. Field-level
+`onFocusGained`/`onFocusLost` fire as internal focus moves.
+
+## Forms
+
+[Form](widgets.md) implements `FocusContainer` to give in-container Tab traversal: add fields
+(`Button`, `Checkbox`, `TextInput`, etc.), and Tab/Shift-Tab cycle them; nested forms (such as
+a horizontal button row) are traversed depth-first. This backs the dialog helpers and any
+multi-field UI.
+
 ## Modal overlays
 
 Focus is a stack of scopes; the base UI is the bottom scope. Opening a modal overlay (see

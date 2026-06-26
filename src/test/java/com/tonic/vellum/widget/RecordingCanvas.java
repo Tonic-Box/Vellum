@@ -4,19 +4,23 @@ import com.tonic.vellum.Canvas;
 import com.tonic.vellum.geom.Rect;
 import com.tonic.vellum.style.Style;
 
-/** A minimal in-memory {@link Canvas} for unit-testing widget rendering. */
+/** A minimal in-memory {@link Canvas} for unit-testing widget rendering; supports {@link #clip}. */
 final class RecordingCanvas implements Canvas {
 
-    private final int width;
-    private final int height;
-    private final char[][] chars;
+    private final char[][] chars;   // shared backing grid
     private final Style[][] styles;
+    private final int ox;
+    private final int oy;
+    private final int w;
+    private final int h;
 
     RecordingCanvas(int width, int height) {
-        this.width = width;
-        this.height = height;
         this.chars = new char[height][width];
         this.styles = new Style[height][width];
+        this.ox = 0;
+        this.oy = 0;
+        this.w = width;
+        this.h = height;
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 chars[y][x] = ' ';
@@ -25,27 +29,36 @@ final class RecordingCanvas implements Canvas {
         }
     }
 
+    private RecordingCanvas(char[][] chars, Style[][] styles, int ox, int oy, int w, int h) {
+        this.chars = chars;
+        this.styles = styles;
+        this.ox = ox;
+        this.oy = oy;
+        this.w = w;
+        this.h = h;
+    }
+
     char charAt(int x, int y) {
-        return chars[y][x];
+        return chars[oy + y][ox + x];
     }
 
     Style styleAt(int x, int y) {
-        return styles[y][x];
+        return styles[oy + y][ox + x];
     }
 
     @Override
     public int width() {
-        return width;
+        return w;
     }
 
     @Override
     public int height() {
-        return height;
+        return h;
     }
 
     @Override
     public Rect bounds() {
-        return new Rect(0, 0, width, height);
+        return new Rect(0, 0, w, h);
     }
 
     @Override
@@ -55,11 +68,11 @@ final class RecordingCanvas implements Canvas {
 
     @Override
     public void put(int x, int y, char c, Style style) {
-        if (x < 0 || x >= width || y < 0 || y >= height) {
+        if (x < 0 || x >= w || y < 0 || y >= h) {
             return;
         }
-        chars[y][x] = c;
-        styles[y][x] = style;
+        chars[oy + y][ox + x] = c;
+        styles[oy + y][ox + x] = style;
     }
 
     @Override
@@ -100,6 +113,10 @@ final class RecordingCanvas implements Canvas {
 
     @Override
     public Canvas clip(Rect sub) {
-        throw new UnsupportedOperationException("clip not needed for these tests");
+        int sx = Math.max(0, sub.x());
+        int sy = Math.max(0, sub.y());
+        int cw = Math.max(0, Math.min(w, sub.right()) - sx);
+        int ch = Math.max(0, Math.min(h, sub.bottom()) - sy);
+        return new RecordingCanvas(chars, styles, ox + sx, oy + sy, cw, ch);
     }
 }

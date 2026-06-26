@@ -3,7 +3,9 @@
 [Back to index](index.md)
 
 Built-in Sections in `com.tonic.vellum.widget`. All extend [Section](sections.md) and use
-only public Section API.
+only public Section API. Two public abstract bases are available to extend:
+`AbstractListSection` (scrollable selection lists) and `SingleRowSection` (a single
+vertically-centered row).
 
 ## LabelSection
 
@@ -68,8 +70,10 @@ Use a non-printable quit such as Ctrl-C or Escape (see [App](app.md)).
 
 ## MenuSection
 
-A vertical, arrow-navigable list with a selection. Up/Down move the selection; Enter fires
-the callback. The selected row is reverse when focused and dimmed-reverse when parked.
+A vertical, arrow-navigable list of strings with a selection. Up/Down move the selection
+(scrolling when there are more items than rows), Page/Home/End jump, Enter fires the
+callback. The selected row gets a full-row highlight: reverse when focused, dim-reverse when
+parked. Built on [AbstractListSection](#list-sections).
 
 ```java
 MenuSection menu = new MenuSection("Logs", "Metrics", "Config")
@@ -78,8 +82,9 @@ MenuSection menu = new MenuSection("Logs", "Metrics", "Config")
 
 | Method | Description |
 |---|---|
-| `MenuSection onSelect(Consumer<Integer>)` | Called with the index on Enter. |
+| `MenuSection onSelect(IntConsumer)` | Called with the index on Enter. |
 | `int selectedIndex()` | Current selection. |
+| `void select(int)` | Move the selection. |
 
 ## ScrollSection
 
@@ -161,5 +166,163 @@ menu.onSelect(detail::select);
 ## Alignment
 
 `com.tonic.vellum.widget.Alignment`: `LEFT`, `CENTER`, `RIGHT`.
+
+## List sections
+
+`AbstractListSection` (public abstract) is the scroll/selection engine behind the list
+widgets: it scrolls to keep the selection visible, draws the full-row highlight, and handles
+Up/Down/Page/Home/End and Enter, with an optional fixed header. Subclass it with `rowCount()`
+and `renderRow(Canvas, int, Style)` to build a custom list.
+
+### SelectList
+
+A scrollable, selectable list of typed items.
+
+```java
+SelectList<User> list = new SelectList<>(users)
+        .renderer(User::name)
+        .onSelectItem(user -> open(user));
+```
+
+| Method | Description |
+|---|---|
+| `SelectList<T> setItems(List<T>)` | Replace the items. |
+| `SelectList<T> renderer(Function<T,String>)` | Item-to-row text (default `String.valueOf`). |
+| `T selectedItem()` | Selected item, or null. |
+| `SelectList<T> onSelect(IntConsumer)` | Index callback on Enter. |
+| `SelectList<T> onSelectItem(Consumer<T>)` | Item callback on Enter. |
+
+### Table
+
+A scrollable table with a fixed header and selectable rows. Column widths are computed from
+each column's [Constraint](layout.md), so the header and rows align and tile the width.
+
+```java
+Table table = new Table()
+        .column("Name", Constraint.fill())
+        .column("Size", Constraint.fixed(8), Alignment.RIGHT)
+        .addRow("a.txt", "1.2 KB");
+```
+
+| Method | Description |
+|---|---|
+| `Table column(String title, Constraint width)` | Add a left-aligned column. |
+| `Table column(String title, Constraint width, Alignment)` | Add an aligned column. |
+| `Table addRow(String...)` / `setRows(List<String[]>)` | Add or replace rows. |
+| `Table showHeader(boolean)` / `headerStyle(Style)` | Header display. |
+| `String[] selectedRow()` | Selected row's cells, or null. |
+
+## Form controls
+
+### Button
+
+A focusable, activatable button. Enter or Space runs the action; reversed when focused.
+
+| Method | Description |
+|---|---|
+| `Button onActivate(Runnable)` | Action. |
+| `Button setLabel(String)` | Label. |
+| `Button style(Style)` / `focusedStyle(Style)` | Styling. |
+
+### Checkbox
+
+| Method | Description |
+|---|---|
+| `Checkbox checked(boolean)` / `boolean isChecked()` | State. |
+| `Checkbox onChange(Consumer<Boolean>)` | Toggle callback (Enter/Space). |
+
+### RadioGroup
+
+A single-choice option list (built on the list base). Arrows move the cursor; Enter or Space
+chooses the option under it.
+
+| Method | Description |
+|---|---|
+| `int chosenIndex()` / `RadioGroup choose(int)` | The chosen option. |
+| `RadioGroup onChange(IntConsumer)` | Choice callback. |
+
+### Form
+
+A focusable field container with internal Tab traversal (implements
+[FocusContainer](focus-and-input.md)). Tab/Shift-Tab cycle the fields; a nested `Form` (e.g.
+a horizontal button row) is traversed depth-first. Esc fires `onCancel`.
+
+| Method | Description |
+|---|---|
+| `static Form row()` | A horizontal form (e.g. a button row), traversed left-to-right. |
+| `Form addField(Section)` / `addField(Section, int)` / `addField(Section, Constraint)` | Add a focusable field. |
+| `Form addStatic(Section, int)` | Add non-focusable decoration. |
+| `Form onCancel(Runnable)` | Esc handler. |
+
+`new Form()` stacks fields vertically; `Form.row()` lays them out horizontally.
+
+## Dialogs
+
+`Dialogs` opens modal dialogs over [App.openOverlay](app.md), returning an `OverlayHandle`.
+Each centers a bordered `Form`; Tab cycles the buttons and Esc cancels. The composing
+widgets are public, so custom dialogs can be built the same way.
+
+```java
+Dialogs.confirm(app, "Delete file?", () -> deleteFile());
+Dialogs.prompt(app, "Rename to", name -> rename(name));
+```
+
+| Method | Description |
+|---|---|
+| `static OverlayHandle alert(App, String message)` | Message + OK. |
+| `static OverlayHandle confirm(App, String message, Runnable onYes)` | Yes/No. |
+| `static OverlayHandle prompt(App, String title, Consumer<String> onSubmit)` | Text field + OK/Cancel. |
+
+## Indicators
+
+### ProgressBar
+
+A horizontal bar (0..1) filled with block glyphs, with an optional centered percentage.
+
+| Method | Description |
+|---|---|
+| `ProgressBar value(double)` / `progress(int, int)` | Set progress. |
+| `ProgressBar showPercent(boolean)` | Overlay the percentage. |
+| `ProgressBar filledStyle(Style)` / `emptyStyle(Style)` | Styling. |
+
+### Spinner
+
+An indeterminate indicator that cycles frames.
+
+| Method | Description |
+|---|---|
+| `void tick()` | Advance one frame. |
+| `Cancellable start(App)` | Animate on the app timer until cancelled. |
+| `Spinner label(String)` / `style(Style)` | Display. |
+
+### Sparkline
+
+A one-row chart of a value series drawn with block glyphs, auto-scaled, newest on the right.
+
+| Method | Description |
+|---|---|
+| `Sparkline setValues(double[])` / `setValues(List<? extends Number>)` | The series. |
+| `Sparkline style(Style)` | Style. |
+
+## TreeView
+
+A scrollable, navigable tree of `TreeNode`s. Arrows move the cursor; Enter or Space toggles a
+parent or selects a leaf; Left/Right collapse and expand.
+
+```java
+TreeNode root = new TreeNode("project")
+        .add(new TreeNode("src").add(new TreeNode("Main.java")))
+        .expanded(true);
+TreeView tree = new TreeView(root).onSelectNode(node -> open(node));
+```
+
+| Method | Description |
+|---|---|
+| `TreeView onSelectNode(Consumer<TreeNode>)` | Leaf-activation callback. |
+| `TreeNode selectedNode()` | Node under the cursor, or null. |
+| `TreeView refresh()` | Re-flatten after mutating the tree. |
+
+`TreeNode`: `add(TreeNode)`, `expanded(boolean)`, `label()`, `children()`, `isLeaf()`,
+`isExpanded()`.
 
 See [Rendering](rendering.md) for `Style` and `Color`.

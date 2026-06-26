@@ -1,12 +1,10 @@
 package com.tonic.vellum.widget;
 
 import com.tonic.vellum.Canvas;
-import com.tonic.vellum.CharWidth;
-import com.tonic.vellum.Section;
 import com.tonic.vellum.style.Style;
 
 /** A single line of static or settable text, with optional horizontal alignment. */
-public final class LabelSection extends Section {
+public final class LabelSection extends SingleRowSection {
 
     private String text;
     private Alignment alignment = Alignment.LEFT;
@@ -39,20 +37,7 @@ public final class LabelSection extends Section {
     }
 
     @Override
-    protected void render(Canvas canvas) {
-        int w = canvas.width();
-        int h = canvas.height();
-        if (h == 0 || w == 0) {
-            return;
-        }
-        int y = h / 2;
-        int textWidth = CharWidth.width(text);
-        int x;
-        switch (alignment) {
-            case CENTER: x = Math.max(0, (w - textWidth) / 2); break;
-            case RIGHT:  x = Math.max(0, w - textWidth); break;
-            default:     x = 0;
-        }
-        canvas.put(x, y, text, style);
+    protected void renderRow(Canvas canvas, int y) {
+        Text.putAligned(canvas, y, text, alignment, style);
     }
 }

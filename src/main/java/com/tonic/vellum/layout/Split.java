@@ -16,13 +16,13 @@ import java.util.List;
  * the fluent form {@code Split.vertical().add(c, s).add(c, s)}. Children are added at
  * construction, before the split enters the live tree.
  */
-public final class Split extends Section {
+public class Split extends Section {
 
     private final Axis axis;
     private final List<Constraint> constraints = new ArrayList<>();
     private final List<Section> sections = new ArrayList<>();
 
-    private Split(Axis axis) {
+    protected Split(Axis axis) {
         this.axis = axis;
     }
 

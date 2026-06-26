@@ -1,5 +1,7 @@
 package com.tonic.vellum.geom;
 
+import com.tonic.vellum.Maths;
+
 /**
  * Immutable rectangle in cell coordinates with pure carving helpers.
  *
@@ -105,8 +107,7 @@ public final class Rect {
     }
 
     private static int clamp(int requested, int available) {
-        if (requested < 0) return 0;
-        return Math.min(requested, available);
+        return Maths.clamp(requested, 0, available);
     }
 
     @Override

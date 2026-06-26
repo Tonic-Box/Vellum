@@ -3,6 +3,7 @@ package com.tonic.vellum.widget;
 import com.tonic.vellum.Canvas;
 import com.tonic.vellum.CharWidth;
 import com.tonic.vellum.KeyResult;
+import com.tonic.vellum.Maths;
 import com.tonic.vellum.Section;
 import com.tonic.vellum.geom.Point;
 import com.tonic.vellum.input.KeyEvent;
@@ -156,7 +157,7 @@ public final class TextInput extends Section {
     }
 
     private void moveCaret(int to) {
-        int clamped = Math.max(0, Math.min(text.length(), to));
+        int clamped = Maths.clamp(to, 0, text.length());
         if (clamped != caret) {
             caret = clamped;
             requestRedraw();

@@ -17,8 +17,8 @@ import java.util.List;
 public class ScrollSection extends Section {
 
     private final List<String> lines = new ArrayList<>();
+    private final Viewport viewport = new Viewport();
     private Style style = Style.NORMAL;
-    private int top = 0;
     private boolean followTail = false;
 
     private boolean wrap;
@@ -71,13 +71,14 @@ public class ScrollSection extends Section {
     }
 
     public int scrollTop() {
-        return top;
+        return viewport.top();
     }
 
     @Override
     protected void render(Canvas canvas) {
         List<String> visible = visibleLines();
-        top = clamp(top, 0, maxTop());
+        viewport.set(viewport.top(), visible.size(), viewportHeight());
+        int top = viewport.top();
         for (int i = 0; i < canvas.height() && top + i < visible.size(); i++) {
             canvas.put(0, i, visible.get(top + i), style);
         }
@@ -91,33 +92,29 @@ public class ScrollSection extends Section {
             case PAGE_UP:   scrollBy(-viewportHeight()); followTail = false; return KeyResult.CONSUMED;
             case PAGE_DOWN: scrollBy(viewportHeight()); return KeyResult.CONSUMED;
             case HOME:      setTop(0); followTail = false; return KeyResult.CONSUMED;
-            case END:       setTop(maxTop()); followTail = true; return KeyResult.CONSUMED;
+            case END:       setTop(Viewport.maxTop(visibleLines().size(), viewportHeight())); followTail = true; return KeyResult.CONSUMED;
             default:        return KeyResult.UNHANDLED;
         }
     }
 
     private void scrollToBottom() {
-        top = maxTop();
+        viewport.toBottom(visibleLines().size(), viewportHeight());
     }
 
     private void scrollBy(int delta) {
-        setTop(top + delta);
+        setTop(viewport.top() + delta);
     }
 
     private void setTop(int newTop) {
-        int clamped = clamp(newTop, 0, maxTop());
-        if (clamped != top) {
-            top = clamped;
+        int before = viewport.top();
+        viewport.set(newTop, visibleLines().size(), viewportHeight());
+        if (viewport.top() != before) {
             requestRedraw();
         }
     }
 
     private int viewportHeight() {
         return Math.max(1, bounds().height());
-    }
-
-    private int maxTop() {
-        return Math.max(0, visibleLines().size() - viewportHeight());
     }
 
     /** The lines to scroll over: wrapped display lines when wrapping, otherwise the logical lines. */
@@ -132,9 +129,5 @@ public class ScrollSection extends Section {
             displayDirty = false;
         }
         return displayLines;
-    }
-
-    private static int clamp(int value, int min, int max) {
-        return Math.max(min, Math.min(max, value));
     }
 }
