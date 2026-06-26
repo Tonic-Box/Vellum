@@ -22,7 +22,12 @@ public class ScrollSection extends Section {
     private boolean followTail = false;
     private int maxLines = 0; // 0 = unlimited
 
-    /** Cap the retained lines, dropping the oldest beyond {@code max}; 0 means unlimited. */
+    /**
+     * Caps the retained lines, dropping the oldest beyond {@code max}; 0 means unlimited.
+     *
+     * @param max the maximum retained lines, or 0 for unlimited
+     * @return this ScrollSection for chaining
+     */
     public ScrollSection maxLines(int max) {
         this.maxLines = Math.max(0, max);
         trim();
@@ -36,12 +41,23 @@ public class ScrollSection extends Section {
     private boolean displayDirty = true;
     private int cachedWidth = -1;
 
+    /**
+     * Sets whether the view stays pinned to the bottom as lines are appended.
+     *
+     * @param follow {@code true} to follow the tail
+     * @return this ScrollSection for chaining
+     */
     public ScrollSection followTail(boolean follow) {
         this.followTail = follow;
         return this;
     }
 
-    /** Enable width-aware word wrapping; scrolling then operates over wrapped display lines. */
+    /**
+     * Enables width-aware word wrapping; scrolling then operates over wrapped display lines.
+     *
+     * @param wrap {@code true} to enable wrapping
+     * @return this ScrollSection for chaining
+     */
     public ScrollSection wrap(boolean wrap) {
         this.wrap = wrap;
         this.displayDirty = true;
@@ -49,12 +65,24 @@ public class ScrollSection extends Section {
         return this;
     }
 
+    /**
+     * Sets the text style.
+     *
+     * @param style the style
+     * @return this ScrollSection for chaining
+     */
     public ScrollSection style(Style style) {
         this.style = style;
         requestRedraw();
         return this;
     }
 
+    /**
+     * Replaces all lines; scrolls to the bottom when following the tail.
+     *
+     * @param newLines the new lines
+     * @return this ScrollSection for chaining
+     */
     public ScrollSection setLines(List<String> newLines) {
         lines.clear();
         lines.addAll(newLines);
@@ -67,7 +95,11 @@ public class ScrollSection extends Section {
         return this;
     }
 
-    /** Append one line; pins to the bottom when following the tail. */
+    /**
+     * Appends one line; pins to the bottom when following the tail.
+     *
+     * @param line the line to append
+     */
     protected void appendLine(String line) {
         lines.add(line);
         trim();
@@ -84,14 +116,29 @@ public class ScrollSection extends Section {
         }
     }
 
+    /**
+     * Returns the number of logical lines.
+     *
+     * @return the line count
+     */
     public int lineCount() {
         return lines.size();
     }
 
+    /**
+     * Returns the index of the first visible line.
+     *
+     * @return the top scroll position
+     */
     public int scrollTop() {
         return viewport.top();
     }
 
+    /**
+     * Draws the visible lines.
+     *
+     * @param canvas the canvas to draw into
+     */
     @Override
     protected void render(Canvas canvas) {
         List<String> visible = visibleLines();
@@ -102,6 +149,12 @@ public class ScrollSection extends Section {
         }
     }
 
+    /**
+     * Handles scrolling keys ({@code UP}/{@code DOWN}/{@code PAGE_*}/{@code HOME}/{@code END}).
+     *
+     * @param key the key event
+     * @return the key handling result
+     */
     @Override
     protected KeyResult onKey(KeyEvent key) {
         switch (key.code()) {

@@ -14,10 +14,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * A vertical stack of fields with internal Tab traversal. Reuses {@link Split} for layout
- * and implements {@link FocusContainer} so Tab/Shift-Tab cycle the fields; nesting another
- * {@code Form} (e.g. a horizontal button row) is traversed depth-first. ESC fires
- * {@code onCancel}. Used by {@link Dialogs} and for any multi-field UI.
+ * A stack of fields with internal Tab traversal. Built on {@link Split} for layout and
+ * implements {@link FocusContainer} so Tab and Shift-Tab cycle the fields, descending
+ * depth-first into nested forms. ESC fires the cancel handler.
  */
 public final class Form extends Split implements FocusContainer {
 
@@ -25,6 +24,9 @@ public final class Form extends Split implements FocusContainer {
     private int active;
     private Runnable onCancel;
 
+    /**
+     * Creates a vertical form whose fields are stacked top to bottom.
+     */
     public Form() {
         super(Axis.VERTICAL);
     }
@@ -33,35 +35,67 @@ public final class Form extends Split implements FocusContainer {
         super(axis);
     }
 
-    /** A horizontal form (e.g. a row of buttons), traversed left-to-right by Tab. */
+    /**
+     * Creates a horizontal form whose fields are laid out left to right.
+     *
+     * @return a new horizontal form
+     */
     public static Form row() {
         return new Form(Axis.HORIZONTAL);
     }
 
-    /** Add a focusable field one cell along the form's axis. */
+    /**
+     * Adds a focusable field spanning one cell along the form's axis.
+     *
+     * @param field the field to add
+     * @return this Form for chaining
+     */
     public Form addField(Section field) {
         return addField(field, Constraint.fixed(1));
     }
 
-    /** Add a focusable field spanning {@code size} cells along the form's axis. */
+    /**
+     * Adds a focusable field spanning a fixed number of cells along the form's axis.
+     *
+     * @param field the field to add
+     * @param size the number of cells to span
+     * @return this Form for chaining
+     */
     public Form addField(Section field, int size) {
         return addField(field, Constraint.fixed(size));
     }
 
-    /** Add a focusable field sized by an explicit constraint (e.g. {@code Constraint.fill()}). */
+    /**
+     * Adds a focusable field sized by an explicit layout constraint.
+     *
+     * @param field the field to add
+     * @param size the constraint sizing the field along the form's axis
+     * @return this Form for chaining
+     */
     public Form addField(Section field, Constraint size) {
         add(size, field);
         fields.add(field);
         return this;
     }
 
-    /** Add non-focusable decoration (e.g. a label) spanning {@code size} cells along the axis. */
+    /**
+     * Adds non-focusable decoration (such as a label) spanning a fixed number of cells.
+     *
+     * @param decoration the section to add
+     * @param size the number of cells to span
+     * @return this Form for chaining
+     */
     public Form addStatic(Section decoration, int size) {
         add(Constraint.fixed(size), decoration);
         return this;
     }
 
-    /** Fired when ESC is pressed while the form has focus. */
+    /**
+     * Sets the handler run when ESC is pressed while the form has focus.
+     *
+     * @param handler the cancel handler
+     * @return this Form for chaining
+     */
     public Form onCancel(Runnable handler) {
         this.onCancel = handler;
         return this;
@@ -76,16 +110,32 @@ public final class Form extends Split implements FocusContainer {
         return KeyResult.UNHANDLED;
     }
 
+    /**
+     * Returns the form's focusable fields in traversal order.
+     *
+     * @return an unmodifiable list of the fields
+     */
     @Override
     public List<Section> focusTargets() {
         return Collections.unmodifiableList(fields);
     }
 
+    /**
+     * Returns the field that currently holds focus within the form.
+     *
+     * @return the active field, or {@code null} if the form has no fields
+     */
     @Override
     public Section activeFocusTarget() {
         return fields.isEmpty() ? null : fields.get(active);
     }
 
+    /**
+     * Moves focus to the next or previous field, descending into nested forms.
+     *
+     * @param forward {@code true} to advance forward, {@code false} to move backward
+     * @return {@code true} if focus moved within this form, {@code false} otherwise
+     */
     @Override
     public boolean advanceFocus(boolean forward) {
         if (fields.isEmpty()) {

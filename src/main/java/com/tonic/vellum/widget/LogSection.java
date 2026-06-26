@@ -10,12 +10,21 @@ public final class LogSection extends ScrollSection {
     /** Default retained line cap, to bound memory for long-running logs. */
     public static final int DEFAULT_MAX_LINES = 5000;
 
+    /**
+     * Creates a log section that follows the tail and retains {@link #DEFAULT_MAX_LINES} lines.
+     */
     public LogSection() {
         followTail(true);
         maxLines(DEFAULT_MAX_LINES);
     }
 
-    /** Append a log line. Must be called on the UI thread (use {@code App.post} from others). */
+    /**
+     * Appends a log line. Must be called on the UI thread (use {@code App.post} from others).
+     *
+     * @param line the line to append
+     * @return this LogSection for chaining
+     * @throws IllegalStateException if called off the UI thread while focused or mounted
+     */
     public LogSection append(String line) {
         appendLine(line);
         return this;

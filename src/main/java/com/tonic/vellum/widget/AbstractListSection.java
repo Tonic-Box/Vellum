@@ -13,10 +13,10 @@ import java.util.function.IntConsumer;
 /**
  * Base for vertical, scrollable, single-selection lists. Handles the cursor, scrolling to
  * keep the selection visible, key navigation, an optional fixed header, and the full-row
- * focused/parked highlight. Subclasses supply the row count and how to draw a row.
+ * focused or parked highlight. Subclasses supply the row count and how to draw a row.
  *
- * <p>Reused by {@link MenuSection}, {@link SelectList}, {@link RadioGroup}, {@link Table}
- * (body), and {@link TreeView}.
+ * <p>Reused by {@link MenuSection}, {@link SelectList}, {@link RadioGroup}, {@link Table}, and
+ * {@link TreeView}.
  */
 public abstract class AbstractListSection extends Section {
 
@@ -25,34 +25,65 @@ public abstract class AbstractListSection extends Section {
     private IntConsumer onSelect = i -> { };
     private IntConsumer onHighlight = i -> { };
 
-    /** Number of selectable rows. */
+    /**
+     * Returns the number of selectable rows.
+     *
+     * @return the row count
+     */
     protected abstract int rowCount();
 
     /**
-     * Draw one row. The canvas is a single row already filled with {@code style} (the
+     * Draws one row. The canvas is a single row already filled with {@code style} (the
      * selection highlight for the selected row, otherwise the normal style).
+     *
+     * @param row the single-row canvas to draw into
+     * @param index the index of the row being drawn
+     * @param style the style the row has been filled with
      */
     protected abstract void renderRow(Canvas row, int index, Style style);
 
-    /** Rows reserved at the top for a fixed header (default none). */
+    /**
+     * Returns the number of rows reserved at the top for a fixed header (default none).
+     *
+     * @return the header row count
+     */
     protected int headerRows() {
         return 0;
     }
 
-    /** Draw the header into its reserved area (default no-op). */
+    /**
+     * Draws the header into its reserved area (default no-op).
+     *
+     * @param header the canvas covering the reserved header area
+     */
     protected void renderHeader(Canvas header) {
     }
 
-    /** Invoked on ENTER. Default fires the {@code onSelect} callback; override for custom activation. */
+    /**
+     * Invoked on ENTER. The default fires the {@code onSelect} callback; override for custom
+     * activation.
+     *
+     * @param index the index of the activated row
+     */
     protected void onActivate(int index) {
         onSelect.accept(index);
     }
 
+    /**
+     * Returns the index of the currently selected row.
+     *
+     * @return the selected row index
+     */
     public int selectedIndex() {
         return selected;
     }
 
-    /** Move the selection (clamped); fires {@code onHighlight} when it changes. */
+    /**
+     * Moves the selection to the given index (clamped to the valid range); fires
+     * {@code onHighlight} when it changes.
+     *
+     * @param index the requested selection index
+     */
     public void select(int index) {
         int clamped = Maths.clamp(index, 0, Math.max(0, rowCount() - 1));
         if (clamped != selected) {
@@ -62,13 +93,23 @@ public abstract class AbstractListSection extends Section {
         }
     }
 
-    /** Called with the row index on ENTER. */
+    /**
+     * Sets the handler called with the row index on ENTER.
+     *
+     * @param handler the activation handler
+     * @return this AbstractListSection for chaining
+     */
     public AbstractListSection onSelect(IntConsumer handler) {
         this.onSelect = handler;
         return this;
     }
 
-    /** Called with the row index whenever the selection moves. */
+    /**
+     * Sets the handler called with the row index whenever the selection moves.
+     *
+     * @param handler the highlight handler
+     * @return this AbstractListSection for chaining
+     */
     public AbstractListSection onHighlight(IntConsumer handler) {
         this.onHighlight = handler;
         return this;

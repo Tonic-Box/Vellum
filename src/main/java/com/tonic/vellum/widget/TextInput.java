@@ -31,13 +31,27 @@ public final class TextInput extends Section {
     private Consumer<String> onSubmit = s -> { };
     private Consumer<String> onChange = s -> { };
 
+    /**
+     * Creates an empty field.
+     */
     public TextInput() {
     }
 
+    /**
+     * Creates a field initialized with the given text.
+     *
+     * @param initial the initial text
+     */
     public TextInput(String initial) {
         setText(initial);
     }
 
+    /**
+     * Sets the field text, moving the caret to the end. A {@code null} value clears the field.
+     *
+     * @param value the new text
+     * @return this TextInput for chaining
+     */
     public TextInput setText(String value) {
         text.setLength(0);
         if (value != null) {
@@ -49,40 +63,79 @@ public final class TextInput extends Section {
         return this;
     }
 
+    /**
+     * Returns the current field text.
+     *
+     * @return the current text
+     */
     public String text() {
         return text.toString();
     }
 
+    /**
+     * Sets the placeholder shown when the field is empty and unfocused. A {@code null} value is
+     * treated as empty.
+     *
+     * @param placeholder the placeholder text
+     * @return this TextInput for chaining
+     */
     public TextInput placeholder(String placeholder) {
         this.placeholder = placeholder == null ? "" : placeholder;
         requestRedraw();
         return this;
     }
 
+    /**
+     * Sets the style used to draw the text.
+     *
+     * @param style the text style
+     * @return this TextInput for chaining
+     */
     public TextInput style(Style style) {
         this.style = style;
         requestRedraw();
         return this;
     }
 
+    /**
+     * Sets the style used to draw the placeholder.
+     *
+     * @param style the placeholder style
+     * @return this TextInput for chaining
+     */
     public TextInput placeholderStyle(Style style) {
         this.placeholderStyle = style;
         requestRedraw();
         return this;
     }
 
-    /** Called with the current text when Enter is pressed. */
+    /**
+     * Sets the handler called with the current text when Enter is pressed.
+     *
+     * @param handler the submit handler
+     * @return this TextInput for chaining
+     */
     public TextInput onSubmit(Consumer<String> handler) {
         this.onSubmit = handler;
         return this;
     }
 
-    /** Called with the current text after every edit. */
+    /**
+     * Sets the handler called with the current text after every edit.
+     *
+     * @param handler the change handler
+     * @return this TextInput for chaining
+     */
     public TextInput onChange(Consumer<String> handler) {
         this.onChange = handler;
         return this;
     }
 
+    /**
+     * Renders the field text or, when empty and unfocused, the placeholder.
+     *
+     * @param canvas the canvas to draw into
+     */
     @Override
     protected void render(Canvas canvas) {
         int w = canvas.width();
@@ -99,11 +152,22 @@ public final class TextInput extends Section {
         canvas.put(0, 0, text.substring(scroll), style);
     }
 
+    /**
+     * Returns the caret position relative to the field, accounting for horizontal scroll.
+     *
+     * @return the cursor point within the field
+     */
     @Override
     protected Point cursor() {
         return new Point(columnWidth(Math.min(scroll, caret), caret), 0);
     }
 
+    /**
+     * Handles editing and caret-movement keys.
+     *
+     * @param key the key event
+     * @return the key handling result
+     */
     @Override
     protected KeyResult onKey(KeyEvent key) {
         switch (key.code()) {

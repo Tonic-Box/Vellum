@@ -4,7 +4,7 @@ import com.tonic.vellum.geom.Rect;
 import com.tonic.vellum.style.Style;
 
 /**
- * A {@code width x height} grid of styled cells, stored as flat parallel arrays
+ * A width-by-height grid of styled cells, stored as flat parallel arrays
  * (no per-cell objects). Each cell holds a Unicode code point so supplementary
  * (astral) characters are representable. Out-of-range writes are ignored. Package-private:
  * the rendering kernel owns buffers; users only ever touch a {@link Canvas}.

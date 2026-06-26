@@ -24,9 +24,9 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
- * Owns the terminal, the single UI thread / event loop, layout, repaint, focus, and
- * resize. Background threads touch the UI only through {@link #post(Runnable)}, which
- * marshals work onto the UI thread - the framework's single concurrency primitive.
+ * Owns the terminal, the single UI thread and event loop, layout, repaint, focus, and
+ * resize. Background threads interact with the UI only through {@link #post(Runnable)},
+ * which marshals work onto the UI thread.
  */
 public final class App {
 
@@ -65,18 +65,27 @@ public final class App {
         this.focus = new FocusManager(new ArrayList<>(b.focusOrder), b.navigation, host);
     }
 
+    /**
+     * Create a new builder for an {@link App}.
+     *
+     * @return a new builder
+     */
     public static Builder builder() {
         return new Builder();
     }
 
-    /** The running instance, or {@code null} when no app is running. */
+    /**
+     * Return the running instance, or {@code null} when no app is running.
+     *
+     * @return the running app, or {@code null}
+     */
     public static App current() {
         return current;
     }
 
     /**
      * Install the terminal, run the event loop until {@link #quit()}, and restore the
-     * terminal on exit - even if an exception propagates.
+     * terminal on exit, even if an exception propagates.
      */
     public void run() {
         uiThread = Thread.currentThread();
@@ -152,7 +161,11 @@ public final class App {
         running = false;
     }
 
-    /** Marshal a runnable onto the UI thread. Safe to call from any thread. */
+    /**
+     * Marshal a runnable onto the UI thread. Safe to call from any thread.
+     *
+     * @param task the runnable to run on the UI thread
+     */
     public void post(Runnable task) {
         tasks.add(task);
     }
@@ -161,6 +174,11 @@ public final class App {
      * Open a modal overlay: render {@code content} on top of the UI at {@code placement}
      * and route keys to it (Tab cycles {@code focusTargets}, or the content itself if none
      * are given). UI-thread-only. Close overlays in reverse order of opening.
+     *
+     * @param content the overlay content section
+     * @param placement the placement that resolves the overlay's bounds
+     * @param focusTargets the sections Tab cycles, or none to focus the content itself
+     * @return a handle to close the overlay
      */
     public OverlayHandle openOverlay(Section content, Placement placement, Section... focusTargets) {
         stage.addOverlay(content, placement);
@@ -171,14 +189,27 @@ public final class App {
         return new OverlayHandleImpl(content);
     }
 
-    /** Schedule a one-shot task on the UI thread after {@code delay}. */
+    /**
+     * Schedule a one-shot task on the UI thread after {@code delay}.
+     *
+     * @param delay the delay before the task runs
+     * @param task the task to run on the UI thread
+     * @return a handle to cancel the scheduled task
+     */
     public Cancellable schedule(Duration delay, Runnable task) {
         ScheduledFuture<?> future = scheduler().schedule(
                 () -> post(task), delay.toMillis(), TimeUnit.MILLISECONDS);
         return new FutureCancellable(future);
     }
 
-    /** Schedule a repeating task on the UI thread. */
+    /**
+     * Schedule a repeating task on the UI thread.
+     *
+     * @param initialDelay the delay before the first run
+     * @param period the period between successive runs
+     * @param task the task to run on the UI thread
+     * @return a handle to cancel the scheduled task
+     */
     public Cancellable scheduleAtFixedRate(Duration initialDelay, Duration period, Runnable task) {
         ScheduledFuture<?> future = scheduler().scheduleAtFixedRate(
                 () -> post(task), initialDelay.toMillis(), period.toMillis(), TimeUnit.MILLISECONDS);
@@ -398,39 +429,78 @@ public final class App {
         private Consumer<Throwable> errorHandler;
         private Terminal terminal;
 
+        /**
+         * Set the root section of the UI.
+         *
+         * @param root the root section
+         * @return this Builder for chaining
+         */
         public Builder root(Section root) {
             this.root = root;
             return this;
         }
 
+        /**
+         * Set the sections that participate in focus navigation, in order.
+         *
+         * @param targets the focusable sections in navigation order
+         * @return this Builder for chaining
+         */
         public Builder focusOrder(Section... targets) {
             this.focusOrder.clear();
             this.focusOrder.addAll(Arrays.asList(targets));
             return this;
         }
 
+        /**
+         * Set the navigation strategy that moves focus between targets.
+         *
+         * @param navigation the navigation strategy
+         * @return this Builder for chaining
+         */
         public Builder navigation(Navigation navigation) {
             this.navigation = navigation;
             return this;
         }
 
+        /**
+         * Set the section that holds focus when the app starts.
+         *
+         * @param target the initially focused section
+         * @return this Builder for chaining
+         */
         public Builder initialFocus(Section target) {
             this.initialFocus = target;
             return this;
         }
 
-        /** Quit when a key matches the predicate. */
+        /**
+         * Quit when a key matches the predicate.
+         *
+         * @param predicate tested against each key event
+         * @return this Builder for chaining
+         */
         public Builder onQuit(Predicate<KeyEvent> predicate) {
             this.quitPredicate = predicate;
             return this;
         }
 
-        /** Convenience: quit on a specific logical key. */
+        /**
+         * Quit on a specific logical key.
+         *
+         * @param key the logical key that triggers quit
+         * @return this Builder for chaining
+         */
         public Builder onQuitKey(Key key) {
             return onQuit(e -> e.is(key));
         }
 
-        /** Convenience: quit on a specific printable character. */
+        /**
+         * Quit on a specific printable character.
+         *
+         * @param ch the character that triggers quit
+         * @return this Builder for chaining
+         */
         public Builder onQuitKey(char ch) {
             return onQuit(e -> e.is(Key.CHAR) && e.ch() == ch);
         }
@@ -439,6 +509,9 @@ public final class App {
          * Handle exceptions thrown by a task, key handler, or section render, on the UI
          * thread. Without one, the loop keeps running and the first error is printed after
          * the terminal is restored.
+         *
+         * @param handler the error handler invoked on the UI thread
+         * @return this Builder for chaining
          */
         public Builder onError(Consumer<Throwable> handler) {
             this.errorHandler = handler;
@@ -451,6 +524,12 @@ public final class App {
             return this;
         }
 
+        /**
+         * Build the configured {@link App}.
+         *
+         * @return the new app
+         * @throws IllegalStateException if no root section is set
+         */
         public App build() {
             if (root == null) {
                 throw new IllegalStateException("App requires a root section");

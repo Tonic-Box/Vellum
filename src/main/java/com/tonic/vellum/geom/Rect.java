@@ -3,10 +3,9 @@ package com.tonic.vellum.geom;
 import com.tonic.vellum.Maths;
 
 /**
- * Immutable rectangle in cell coordinates with pure carving helpers.
- *
- * <p>All helpers are non-mutating: {@code take*} returns a strip, {@code split*}
- * returns {@code {strip, remainder}}. There is no stateful cursor.
+ * Immutable rectangle in cell coordinates. The {@code take*} methods return a strip and
+ * the {@code split*} methods return {@code {strip, remainder}}; both leave this rect
+ * unchanged.
  */
 public final class Rect {
 
@@ -15,6 +14,14 @@ public final class Rect {
     private final int width;
     private final int height;
 
+    /**
+     * Creates a rectangle. Negative width or height is clamped to zero.
+     *
+     * @param x left edge in cells
+     * @param y top edge in cells
+     * @param width width in cells
+     * @param height height in cells
+     */
     public Rect(int x, int y, int width, int height) {
         this.x = x;
         this.y = y;
@@ -22,55 +29,107 @@ public final class Rect {
         this.height = Math.max(0, height);
     }
 
+    /** @return the left edge in cells */
     public int x() { return x; }
+    /** @return the top edge in cells */
     public int y() { return y; }
+    /** @return the width in cells */
     public int width() { return width; }
+    /** @return the height in cells */
     public int height() { return height; }
 
-    /** Exclusive right edge: {@code x + width}. */
+    /**
+     * Returns the exclusive right edge.
+     *
+     * @return {@code x + width}
+     */
     public int right() { return x + width; }
 
-    /** Exclusive bottom edge: {@code y + height}. */
+    /**
+     * Returns the exclusive bottom edge.
+     *
+     * @return {@code y + height}
+     */
     public int bottom() { return y + height; }
 
-    /** True when this rect covers zero cells. */
+    /**
+     * Reports whether this rect covers zero cells.
+     *
+     * @return true when the width or height is zero
+     */
     public boolean isEmpty() { return width == 0 || height == 0; }
 
-    /** True when the absolute point lies inside this rect. */
+    /**
+     * Reports whether the absolute point lies inside this rect.
+     *
+     * @param px point x in cells
+     * @param py point y in cells
+     * @return true when the point is within these bounds
+     */
     public boolean contains(int px, int py) {
         return px >= x && px < right() && py >= y && py < bottom();
     }
 
-    /** Shrink on all four sides by {@code amount}; dimensions clamp at zero. */
+    /**
+     * Shrinks this rect on all four sides.
+     *
+     * @param amount cells to remove from each side; dimensions clamp at zero
+     * @return a new rect inset by the amount
+     */
     public Rect inset(int amount) {
         return new Rect(x + amount, y + amount, width - 2 * amount, height - 2 * amount);
     }
 
-    /** Top strip of the given height, clamped to this rect. */
+    /**
+     * Returns the top strip of the given height, clamped to this rect.
+     *
+     * @param rows strip height in cells
+     * @return the top strip
+     */
     public Rect takeTop(int rows) {
         int h = clamp(rows, height);
         return new Rect(x, y, width, h);
     }
 
-    /** Bottom strip of the given height, clamped to this rect. */
+    /**
+     * Returns the bottom strip of the given height, clamped to this rect.
+     *
+     * @param rows strip height in cells
+     * @return the bottom strip
+     */
     public Rect takeBottom(int rows) {
         int h = clamp(rows, height);
         return new Rect(x, bottom() - h, width, h);
     }
 
-    /** Left strip of the given width, clamped to this rect. */
+    /**
+     * Returns the left strip of the given width, clamped to this rect.
+     *
+     * @param cols strip width in cells
+     * @return the left strip
+     */
     public Rect takeLeft(int cols) {
         int w = clamp(cols, width);
         return new Rect(x, y, w, height);
     }
 
-    /** Right strip of the given width, clamped to this rect. */
+    /**
+     * Returns the right strip of the given width, clamped to this rect.
+     *
+     * @param cols strip width in cells
+     * @return the right strip
+     */
     public Rect takeRight(int cols) {
         int w = clamp(cols, width);
         return new Rect(right() - w, y, w, height);
     }
 
-    /** Split off a top strip: {@code {top, rest}}. */
+    /**
+     * Splits off a top strip.
+     *
+     * @param rows strip height in cells
+     * @return a two-element array {@code {top, rest}}
+     */
     public Rect[] splitTop(int rows) {
         int h = clamp(rows, height);
         return new Rect[]{
@@ -79,7 +138,12 @@ public final class Rect {
         };
     }
 
-    /** Split off a bottom strip: {@code {bottom, rest}}. */
+    /**
+     * Splits off a bottom strip.
+     *
+     * @param rows strip height in cells
+     * @return a two-element array {@code {bottom, rest}}
+     */
     public Rect[] splitBottom(int rows) {
         int h = clamp(rows, height);
         return new Rect[]{
@@ -88,7 +152,12 @@ public final class Rect {
         };
     }
 
-    /** Split off a left strip: {@code {left, rest}}. */
+    /**
+     * Splits off a left strip.
+     *
+     * @param cols strip width in cells
+     * @return a two-element array {@code {left, rest}}
+     */
     public Rect[] splitLeft(int cols) {
         int w = clamp(cols, width);
         return new Rect[]{
@@ -97,7 +166,12 @@ public final class Rect {
         };
     }
 
-    /** Split off a right strip: {@code {right, rest}}. */
+    /**
+     * Splits off a right strip.
+     *
+     * @param cols strip width in cells
+     * @return a two-element array {@code {right, rest}}
+     */
     public Rect[] splitRight(int cols) {
         int w = clamp(cols, width);
         return new Rect[]{

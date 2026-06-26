@@ -6,13 +6,21 @@ public final class TerminalSize {
     private final int columns;
     private final int rows;
 
+    /**
+     * Creates a terminal size. Negative values are clamped to zero.
+     *
+     * @param columns width in cells
+     * @param rows height in cells
+     */
     public TerminalSize(int columns, int rows) {
         this.columns = Math.max(0, columns);
         this.rows = Math.max(0, rows);
     }
 
+    /** @return the width in cells */
     public int columns() { return columns; }
 
+    /** @return the height in cells */
     public int rows() { return rows; }
 
     @Override

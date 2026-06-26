@@ -15,12 +15,24 @@ public final class Sparkline extends SingleRowSection {
     private double[] values = new double[0];
     private Style style = Style.NORMAL;
 
+    /**
+     * Sets the value series from an array; a {@code null} array clears the series.
+     *
+     * @param values the values to chart
+     * @return this Sparkline for chaining
+     */
     public Sparkline setValues(double[] values) {
         this.values = values == null ? new double[0] : values.clone();
         requestRedraw();
         return this;
     }
 
+    /**
+     * Sets the value series from a list of numbers; a {@code null} list clears the series.
+     *
+     * @param values the values to chart
+     * @return this Sparkline for chaining
+     */
     public Sparkline setValues(List<? extends Number> values) {
         if (values == null) {
             this.values = new double[0];
@@ -34,12 +46,21 @@ public final class Sparkline extends SingleRowSection {
         return this;
     }
 
+    /**
+     * Sets the style used to draw the chart.
+     *
+     * @param style the style
+     * @return this Sparkline for chaining
+     */
     public Sparkline style(Style style) {
         this.style = style;
         requestRedraw();
         return this;
     }
 
+    /**
+     * Renders the sparkline row.
+     */
     @Override
     protected void renderRow(Canvas canvas, int y) {
         int w = canvas.width();

@@ -5,14 +5,13 @@ import com.tonic.vellum.geom.Rect;
 import java.util.List;
 
 /**
- * Pure constraint solver. {@link #solve} divides an available rect among children along
- * one axis, guaranteeing the result <em>exactly tiles</em> the available extent: no gaps,
- * no overlap, every cell covered.
+ * Constraint solver that divides an available rect among children along one axis. The
+ * result exactly tiles the available extent with no gaps or overlap.
  *
- * <p>Algorithm: fixed and percent sizes form each item's base; min/max/fill items also
- * carry a flex weight (min/max have a floor/cap). Remaining space is distributed across
- * weights respecting caps; any rounding remainder goes to the last flexible item (or, if
- * none, stretches the last item) so the sizes always sum to the extent.
+ * <p>Fixed and percent sizes form each item's base; min, max, and fill items also carry a
+ * flex weight, with min and max applying a floor or cap. Remaining space is distributed
+ * across weights respecting caps; any rounding remainder goes to the last flexible item,
+ * or stretches the last item if none is flexible, so the sizes always sum to the extent.
  */
 public final class LayoutSolver {
 
@@ -20,6 +19,14 @@ public final class LayoutSolver {
 
     private LayoutSolver() {}
 
+    /**
+     * Divides the available rect among the constraints along the given axis.
+     *
+     * @param available the rect to subdivide
+     * @param constraints the per-child sizing rules, in order
+     * @param axis the axis to divide along
+     * @return one rect per constraint that together tile the available rect
+     */
     public static Rect[] solve(Rect available, List<Constraint> constraints, Axis axis) {
         int n = constraints.size();
         Rect[] result = new Rect[n];

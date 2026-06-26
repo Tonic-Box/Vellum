@@ -13,12 +13,20 @@ public final class Slot {
         this.section = section;
     }
 
-    /** Pair a constraint with the section it sizes. */
+    /**
+     * Pairs a constraint with the section it sizes.
+     *
+     * @param constraint the sizing constraint
+     * @param section the section to size
+     * @return the slot
+     */
     public static Slot of(Constraint constraint, Section section) {
         return new Slot(constraint, section);
     }
 
+    /** @return the sizing constraint */
     public Constraint constraint() { return constraint; }
 
+    /** @return the section */
     public Section section() { return section; }
 }

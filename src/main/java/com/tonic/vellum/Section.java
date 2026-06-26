@@ -8,12 +8,12 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * The single universal unit of a Vellum UI. Every visible thing is a Section; containers
- * are Sections that hold Sections. The framework assigns each section its bounds during
+ * The base unit of a Vellum UI. Every visible element is a Section, and containers are
+ * Sections that hold other Sections. The framework assigns each section its bounds during
  * layout, clips a {@link Canvas} to those bounds, routes keys to the focused section, and
- * batches repaints of the dirty subtree.
+ * repaints the dirty subtree.
  *
- * <p>Subclasses override {@link #render} (required) and any lifecycle/input hooks they
+ * <p>Subclasses override {@link #render} (required) and any lifecycle or input hooks they
  * need. Container subclasses additionally override {@link #children()} and lay out their
  * children with {@link #place(Section, Rect)}.
  */
@@ -30,14 +30,19 @@ public abstract class Section {
     /**
      * Draw this section. The canvas is already clipped to this section's bounds and uses
      * local coordinates ({@code (0,0)} = top-left). Out-of-bounds writes are discarded.
+     *
+     * @param canvas the clipped drawing surface for this section
      */
     protected abstract void render(Canvas canvas);
 
     // ---- input ----
 
     /**
-     * Handle a key. Return {@link KeyResult#CONSUMED} to stop propagation, or
-     * {@link KeyResult#UNHANDLED} to let it bubble to the parent and focus manager.
+     * Handle a key.
+     *
+     * @param key the key event to handle
+     * @return {@link KeyResult#CONSUMED} to stop propagation, or {@link KeyResult#UNHANDLED}
+     *         to let it bubble to the parent and focus manager
      */
     protected KeyResult onKey(KeyEvent key) {
         return KeyResult.UNHANDLED;
@@ -57,13 +62,19 @@ public abstract class Section {
     /** This section lost focus. */
     protected void onFocusLost() {}
 
-    /** Bounds changed (layout or terminal resize). */
+    /**
+     * Called when the bounds change (layout or terminal resize).
+     *
+     * @param newBounds the section's new bounds
+     */
     protected void onResize(Rect newBounds) {}
 
     /**
-     * The text cursor position in local coordinates, or {@code null} to keep it hidden.
-     * Queried once per repaint for the focused section only (the deepest node on the focus
-     * path). Override in editable widgets; default hides the cursor.
+     * Return the text cursor position in local coordinates, or {@code null} to keep it
+     * hidden. Queried once per repaint for the focused section only (the deepest node on
+     * the focus path). Override in editable widgets; default hides the cursor.
+     *
+     * @return the cursor position in local coordinates, or {@code null} to hide it
      */
     protected Point cursor() {
         return null;
@@ -71,7 +82,11 @@ public abstract class Section {
 
     // ---- user-callable API ----
 
-    /** Mark this section dirty; the framework batches and repaints the dirty subtree. */
+    /**
+     * Mark this section dirty; the framework batches and repaints the dirty subtree.
+     *
+     * @throws IllegalStateException if called off the UI thread
+     */
     public final void requestRedraw() {
         if (host != null) {
             host.assertUiThread();
@@ -82,7 +97,12 @@ public abstract class Section {
         }
     }
 
-    /** Mark a child (and its entire live subtree) dirty, e.g. when re-showing a hidden subtree. */
+    /**
+     * Mark a child (and its entire live subtree) dirty, e.g. when re-showing a hidden subtree.
+     *
+     * @param target the subtree root to mark dirty
+     * @throws IllegalStateException if called off the UI thread
+     */
     protected final void redrawSubtree(Section target) {
         if (host != null) {
             host.assertUiThread();
@@ -104,6 +124,8 @@ public abstract class Section {
      * Notify the framework that this container changed its active focus target so the focus
      * path, key routing, and cursor track the new target. Call on the UI thread after the
      * change (containers implementing {@link com.tonic.vellum.focus.FocusContainer}).
+     *
+     * @throws IllegalStateException if called off the UI thread
      */
     protected final void refreshFocus() {
         if (host != null) {
@@ -112,25 +134,48 @@ public abstract class Section {
         }
     }
 
-    /** True if this section currently holds input focus (is on the focus path). */
+    /**
+     * Report whether this section currently holds input focus (is on the focus path).
+     *
+     * @return {@code true} if this section is on the focus path
+     */
     public final boolean isFocused() {
         return host != null && host.isOnFocusPath(this);
     }
 
+    /**
+     * Return this section's current bounds.
+     *
+     * @return the section's bounds
+     */
     public final Rect bounds() {
         return bounds;
     }
 
+    /**
+     * Return this section's parent.
+     *
+     * @return the parent section, or {@code null} if this is the root or unattached
+     */
     public final Section parent() {
         return parent;
     }
 
-    /** Convenience: wrap this section in a {@link com.tonic.vellum.widget.BorderSection}. */
+    /**
+     * Wrap this section in a {@link com.tonic.vellum.widget.BorderSection}.
+     *
+     * @return the wrapping bordered section
+     */
     public final Section bordered() {
         return new com.tonic.vellum.widget.BorderSection(this);
     }
 
-    /** Convenience: wrap this section in a titled border. */
+    /**
+     * Wrap this section in a titled border.
+     *
+     * @param title the border title
+     * @return the wrapping bordered section
+     */
     public final Section bordered(String title) {
         return new com.tonic.vellum.widget.BorderSection(this).title(title);
     }
@@ -138,10 +183,11 @@ public abstract class Section {
     // ---- container API (for subclasses that own children) ----
 
     /**
-     * The children on this section's live render path. Default: none. Containers override
-     * this; the framework walks it for layout, mounting, repainting, and focus. A
-     * {@code TabHost} returns only its active child, which is why only the active tab is
-     * ever "live".
+     * Return the children on this section's live render path. Default: none. Containers
+     * override this; the framework walks it for layout, mounting, repainting, and focus.
+     * A {@code TabHost} returns only its active child, so only the active tab is live.
+     *
+     * @return the live child sections; never {@code null}
      */
     protected List<Section> children() {
         return Collections.emptyList();
@@ -150,6 +196,9 @@ public abstract class Section {
     /**
      * Assign bounds to a child and link it as this section's child. When the bounds change
      * the child is marked dirty and {@link #onResize} fires, cascading layout downward.
+     *
+     * @param child the child section to place
+     * @param childBounds the bounds to assign to the child
      */
     protected final void place(Section child, Rect childBounds) {
         child.parent = this;
@@ -165,6 +214,8 @@ public abstract class Section {
      * Bring a child (and its subtree) onto the live render path: attach the host, set the
      * mounted flag, fire {@link #onMount}, and recurse. Used by containers that show
      * children on demand (e.g. {@code TabHost.select}).
+     *
+     * @param child the child section to mount
      */
     protected final void mount(Section child) {
         child.parent = this;
@@ -179,6 +230,8 @@ public abstract class Section {
     /**
      * Remove a child (and its subtree) from the live render path: fire {@link #onUnmount}
      * depth-first and clear the mounted flag. The instance is retained.
+     *
+     * @param child the child section to unmount
      */
     protected final void unmount(Section child) {
         for (Section grandchild : child.children()) {

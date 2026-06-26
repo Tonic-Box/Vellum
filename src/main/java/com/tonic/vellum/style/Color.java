@@ -46,22 +46,42 @@ public final class Color {
     public static final Color BRIGHT_CYAN = named(14);
     public static final Color BRIGHT_WHITE = named(15);
 
-    /** A 256-color palette index (0-255). */
+    /**
+     * Creates a color from a 256-color palette index.
+     *
+     * @param index palette index, clamped to 0-255
+     * @return the indexed color
+     */
     public static Color ansi256(int index) {
         return new Color(Kind.INDEXED, clamp(index, 255), 0, 0);
     }
 
-    /** A 24-bit truecolor (each channel 0-255). */
+    /**
+     * Creates a 24-bit truecolor.
+     *
+     * @param red red channel, clamped to 0-255
+     * @param green green channel, clamped to 0-255
+     * @param blue blue channel, clamped to 0-255
+     * @return the RGB color
+     */
     public static Color rgb(int red, int green, int blue) {
         return new Color(Kind.RGB, clamp(red, 255), clamp(green, 255), clamp(blue, 255));
     }
 
-    /** SGR parameter(s) for using this color as foreground (without the leading separator). */
+    /**
+     * Returns the SGR parameters for using this color as the foreground.
+     *
+     * @return the SGR parameters without the leading separator
+     */
     public String foregroundSgr() {
         return sgr(30, 90, 38, 39);
     }
 
-    /** SGR parameter(s) for using this color as background (without the leading separator). */
+    /**
+     * Returns the SGR parameters for using this color as the background.
+     *
+     * @return the SGR parameters without the leading separator
+     */
     public String backgroundSgr() {
         return sgr(40, 100, 48, 49);
     }

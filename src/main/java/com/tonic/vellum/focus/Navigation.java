@@ -12,12 +12,20 @@ import java.util.List;
 public interface Navigation {
 
     /**
-     * Choose the focus target reached by pressing {@code direction} from {@code current},
-     * or {@code null} to leave focus unchanged.
+     * Chooses the focus target reached by pressing {@code direction} from {@code current}.
+     *
+     * @param current the currently focused section
+     * @param direction the arrow key pressed
+     * @param targets the candidate focus targets
+     * @return the target to focus, or {@code null} to leave focus unchanged
      */
     Section resolve(Section current, Key direction, List<Section> targets);
 
-    /** Adjacency-based navigation using the targets' on-screen bounds. */
+    /**
+     * Returns an adjacency-based navigation strategy using the targets' on-screen bounds.
+     *
+     * @return the spatial navigation strategy
+     */
     static Navigation spatial() {
         return new SpatialNavigation();
     }

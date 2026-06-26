@@ -15,23 +15,45 @@ public final class TextSection extends Section {
     private Style style = Style.NORMAL;
     private boolean wrap;
 
+    /**
+     * Creates a text section. The text is split into lines on {@code \n}.
+     *
+     * @param text the initial text
+     */
     public TextSection(String text) {
         this.lines = split(text);
     }
 
+    /**
+     * Sets the text. The text is split into lines on {@code \n}.
+     *
+     * @param text the new text
+     * @return this TextSection for chaining
+     */
     public TextSection setText(String text) {
         this.lines = split(text);
         requestRedraw();
         return this;
     }
 
+    /**
+     * Sets the text style.
+     *
+     * @param style the style
+     * @return this TextSection for chaining
+     */
     public TextSection style(Style style) {
         this.style = style;
         requestRedraw();
         return this;
     }
 
-    /** Enable width-aware word wrapping (default off). */
+    /**
+     * Enables width-aware word wrapping (default off).
+     *
+     * @param wrap {@code true} to enable wrapping
+     * @return this TextSection for chaining
+     */
     public TextSection wrap(boolean wrap) {
         this.wrap = wrap;
         requestRedraw();

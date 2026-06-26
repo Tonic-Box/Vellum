@@ -23,14 +23,31 @@ public final class RadioGroup extends AbstractListSection {
     private int chosen;
     private IntConsumer onChange = i -> { };
 
+    /**
+     * Creates a radio group with the given options. The first option is chosen initially.
+     *
+     * @param options the option labels in order
+     */
     public RadioGroup(String... options) {
         this.options = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(options)));
     }
 
+    /**
+     * Returns the index of the chosen option.
+     *
+     * @return the chosen option index
+     */
     public int chosenIndex() {
         return chosen;
     }
 
+    /**
+     * Chooses the option at the given index; fires {@code onChange} when it changes. Out-of-range
+     * indices are ignored.
+     *
+     * @param index the option index to choose
+     * @return this RadioGroup for chaining
+     */
     public RadioGroup choose(int index) {
         if (index >= 0 && index < options.size() && index != chosen) {
             chosen = index;
@@ -40,26 +57,56 @@ public final class RadioGroup extends AbstractListSection {
         return this;
     }
 
+    /**
+     * Sets the handler called with the chosen index whenever the choice changes.
+     *
+     * @param handler the change handler
+     * @return this RadioGroup for chaining
+     */
     public RadioGroup onChange(IntConsumer handler) {
         this.onChange = handler;
         return this;
     }
 
+    /**
+     * Returns the number of options.
+     *
+     * @return the option count
+     */
     @Override
     protected int rowCount() {
         return options.size();
     }
 
+    /**
+     * Draws the option label prefixed with its chosen or unchosen marker.
+     *
+     * @param row the single-row canvas to draw into
+     * @param index the option index
+     * @param style the style the row has been filled with
+     */
     @Override
     protected void renderRow(Canvas row, int index, Style style) {
         row.put(0, 0, (index == chosen ? "(o) " : "( ) ") + options.get(index), style);
     }
 
+    /**
+     * Chooses the activated option.
+     *
+     * @param index the index of the activated option
+     */
     @Override
     protected void onActivate(int index) {
         choose(index);
     }
 
+    /**
+     * Handles SPACE to choose the option under the cursor; otherwise defers to the base
+     * navigation keys.
+     *
+     * @param key the key event
+     * @return the key handling result
+     */
     @Override
     protected KeyResult onKey(KeyEvent key) {
         if (key.is(Key.CHAR) && key.ch() == ' ') {

@@ -10,12 +10,22 @@ public final class CharWidth {
 
     private CharWidth() {}
 
-    /** Display width of a BMP character. */
+    /**
+     * Return the display width of a BMP character.
+     *
+     * @param c the character to measure
+     * @return the display width (0, 1, or 2)
+     */
     public static int of(char c) {
         return of((int) c);
     }
 
-    /** Total display width of a sequence (sum of its code points' widths). */
+    /**
+     * Return the total display width of a sequence (sum of its code points' widths).
+     *
+     * @param text the sequence to measure
+     * @return the total display width
+     */
     public static int width(CharSequence text) {
         int total = 0;
         int i = 0;
@@ -28,7 +38,12 @@ public final class CharWidth {
         return total;
     }
 
-    /** Display width of a Unicode code point. */
+    /**
+     * Return the display width of a Unicode code point.
+     *
+     * @param cp the code point to measure
+     * @return the display width (0, 1, or 2)
+     */
     public static int of(int cp) {
         if (cp == 0) {
             return 0; // wide-continuation sentinel

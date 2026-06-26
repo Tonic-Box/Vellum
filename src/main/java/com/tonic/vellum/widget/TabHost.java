@@ -14,14 +14,14 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Holds N child sections and renders exactly one (the active tab) plus a one-row tab bar,
- * swapping instantly. Child instances are always retained across switches; only visibility
- * lifecycle ({@code onMount}/{@code onUnmount}) fires, so a hidden tab can pause work and
- * resume when shown.
+ * Holds N child sections and renders exactly one (the active tab) plus a one-row tab bar.
+ * Child instances are retained across switches; only the visibility lifecycle
+ * ({@code onMount}/{@code onUnmount}) fires, so a hidden tab can pause work and resume when
+ * shown.
  *
  * <p>As a {@link FocusContainer}, the active content is part of the focus path while the
- * tab host is focused, so the content receives keys first (e.g. scrolling) and the tab host
- * handles {@code LEFT}/{@code RIGHT} only when the content leaves them unhandled.
+ * tab host is focused, so the content receives keys first (for example scrolling) and the
+ * tab host handles {@code LEFT}/{@code RIGHT} only when the content leaves them unhandled.
  */
 public final class TabHost extends Section implements FocusContainer {
 
@@ -31,26 +31,54 @@ public final class TabHost extends Section implements FocusContainer {
     private boolean showTabBar = true;
     private boolean live = false;
 
+    /**
+     * Adds a tab with the given title and content.
+     *
+     * @param title the tab title
+     * @param content the tab content section
+     * @return this TabHost for chaining
+     */
     public TabHost add(String title, Section content) {
         titles.add(title);
         contents.add(content);
         return this;
     }
 
+    /**
+     * Sets whether the tab bar is shown.
+     *
+     * @param show {@code true} to show the tab bar
+     * @return this TabHost for chaining
+     */
     public TabHost showTabBar(boolean show) {
         this.showTabBar = show;
         return this;
     }
 
+    /**
+     * Returns the index of the active tab.
+     *
+     * @return the active tab index
+     */
     public int active() {
         return active;
     }
 
+    /**
+     * Returns the number of tabs.
+     *
+     * @return the tab count
+     */
     public int count() {
         return contents.size();
     }
 
-    /** Switch to a tab by index, firing visibility lifecycle on the outgoing/incoming children. */
+    /**
+     * Switches to the tab at the given index, firing the visibility lifecycle on the outgoing
+     * and incoming children. Out-of-range indices and the already-active index are ignored.
+     *
+     * @param index the tab index to activate
+     */
     public void select(int index) {
         if (index < 0 || index >= contents.size() || index == active) {
             return;
@@ -69,7 +97,11 @@ public final class TabHost extends Section implements FocusContainer {
         }
     }
 
-    /** Switch to a tab by title. */
+    /**
+     * Switches to the tab with the given title. Unknown titles are ignored.
+     *
+     * @param title the tab title to activate
+     */
     public void select(String title) {
         int index = titles.indexOf(title);
         if (index >= 0) {
@@ -77,6 +109,12 @@ public final class TabHost extends Section implements FocusContainer {
         }
     }
 
+    /**
+     * Returns the active content as the sole child section, or an empty list when there are no
+     * tabs.
+     *
+     * @return the active child, or an empty list
+     */
     @Override
     protected List<Section> children() {
         return contents.isEmpty()
@@ -84,16 +122,27 @@ public final class TabHost extends Section implements FocusContainer {
                 : Collections.singletonList(contents.get(active));
     }
 
+    /**
+     * Marks the host as mounted.
+     */
     @Override
     protected void onMount() {
         live = true;
     }
 
+    /**
+     * Marks the host as unmounted.
+     */
     @Override
     protected void onUnmount() {
         live = false;
     }
 
+    /**
+     * Places the active content within the content area.
+     *
+     * @param newBounds the new bounds of this section
+     */
     @Override
     protected void onResize(Rect newBounds) {
         if (!contents.isEmpty()) {
@@ -106,6 +155,11 @@ public final class TabHost extends Section implements FocusContainer {
         return showTabBar ? b.splitTop(1)[1] : b;
     }
 
+    /**
+     * Draws the tab bar.
+     *
+     * @param canvas the canvas to draw into
+     */
     @Override
     protected void render(Canvas canvas) {
         if (!showTabBar) {
@@ -125,6 +179,12 @@ public final class TabHost extends Section implements FocusContainer {
         }
     }
 
+    /**
+     * Handles {@code LEFT}/{@code RIGHT}/{@code CTRL_TAB} to switch tabs.
+     *
+     * @param key the key event
+     * @return the key handling result
+     */
     @Override
     protected KeyResult onKey(KeyEvent key) {
         switch (key.code()) {
@@ -146,16 +206,32 @@ public final class TabHost extends Section implements FocusContainer {
 
     // ---- FocusContainer: the active content is the internal focus stop ----
 
+    /**
+     * Returns the focus targets, which are the active content.
+     *
+     * @return the focus targets
+     */
     @Override
     public List<Section> focusTargets() {
         return children();
     }
 
+    /**
+     * Returns the active focus target, or {@code null} when there are no tabs.
+     *
+     * @return the active content, or {@code null}
+     */
     @Override
     public Section activeFocusTarget() {
         return contents.isEmpty() ? null : contents.get(active);
     }
 
+    /**
+     * Returns {@code false}; the tab host has no internal Tab stops, so Tab crosses panes.
+     *
+     * @param forward {@code true} to advance forward, {@code false} backward
+     * @return {@code false} always
+     */
     @Override
     public boolean advanceFocus(boolean forward) {
         return false; // no internal Tab stops in v1: TAB crosses panes

@@ -5,7 +5,11 @@ public final class Terminals {
 
     private Terminals() {}
 
-    /** Open the system terminal (JLine-backed by default). */
+    /**
+     * Opens the system terminal, JLine-backed by default.
+     *
+     * @return the platform terminal driver
+     */
     public static Terminal system() {
         return new JLineTerminal();
     }
