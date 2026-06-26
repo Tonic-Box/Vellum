@@ -71,7 +71,7 @@ Use a non-printable quit such as Ctrl-C or Escape (see [App](app.md)).
 ## MenuSection
 
 A vertical, arrow-navigable list of strings with a selection. Up/Down move the selection
-(scrolling when there are more items than rows), Page/Home/End jump, Enter fires the
+(scrolling when there are more items than rows), Page/Home/End jump, Enter or Space fires the
 callback. The selected row gets a full-row highlight: reverse when focused, dim-reverse when
 parked. Built on [AbstractListSection](#list-sections).
 
@@ -82,7 +82,7 @@ MenuSection menu = new MenuSection("Logs", "Metrics", "Config")
 
 | Method | Description |
 |---|---|
-| `MenuSection onSelect(IntConsumer)` | Called with the index on Enter. |
+| `MenuSection onSelect(IntConsumer)` | Called with the index on Enter or Space. |
 | `int selectedIndex()` | Current selection. |
 | `void select(int)` | Move the selection. |
 
@@ -90,11 +90,11 @@ MenuSection menu = new MenuSection("Logs", "Metrics", "Config")
 
 Vertically scrollable lines. Up/Down scroll by one, Page Up/Down by a screen, Home/End jump
 to the ends. Optional follow-tail keeps the view pinned to the bottom as lines are added;
-scrolling up turns it off, End turns it back on.
+scrolling up turns it off, and scrolling back to the bottom or pressing End turns it back on.
 
 | Method | Description |
 |---|---|
-| `ScrollSection followTail(boolean)` | Pin to the bottom on append. |
+| `ScrollSection followTail(boolean)` | Follow the tail; enabling it scrolls to the bottom now. |
 | `ScrollSection setLines(List<String>)` | Replace all lines. |
 | `ScrollSection style(Style)` | Text style. |
 | `ScrollSection wrap(boolean)` | Word-wrap; scrolling then operates over display lines. |
@@ -145,8 +145,9 @@ Section same = menu.bordered("Menu");
 Holds N children, renders one active tab plus a one-row tab bar, and swaps instantly.
 Child instances are always retained; switching fires `onUnmount` on the outgoing child and
 `onMount` on the incoming one. Left/Right switch tabs when the active content leaves them
-unhandled. As a [FocusContainer](focus-and-input.md), the active content is on the focus
-path while the tab host is focused, so content receives keys first.
+unhandled, and Ctrl-Tab cycles. As a [FocusContainer](focus-and-input.md), the active content
+is on the focus path while the tab host is focused, so content receives keys first; switching
+tabs moves focus and keys to the new content.
 
 ```java
 TabHost detail = new TabHost()
@@ -173,8 +174,10 @@ menu.onSelect(detail::select);
 
 `AbstractListSection` (public abstract) is the scroll/selection engine behind the list
 widgets: it scrolls to keep the selection visible, draws the full-row highlight, and handles
-Up/Down/Page/Home/End and Enter, with an optional fixed header. Subclass it with `rowCount()`
-and `renderRow(Canvas, int, Style)` to build a custom list.
+Up/Down/Page/Home/End and Enter or Space, with an optional fixed header. Subclass it with
+`rowCount()` and `renderRow(Canvas, int, Style)` to build a custom list. It provides the public
+`select(int)`, `selectedIndex()`, `onSelect(IntConsumer)` (activation), and
+`onHighlight(IntConsumer)` (called as the selection moves).
 
 ### SelectList
 
@@ -191,8 +194,8 @@ SelectList<User> list = new SelectList<>(users)
 | `SelectList<T> setItems(List<T>)` | Replace the items. |
 | `SelectList<T> renderer(Function<T,String>)` | Item-to-row text (default `String.valueOf`). |
 | `T selectedItem()` | Selected item, or null. |
-| `SelectList<T> onSelect(IntConsumer)` | Index callback on Enter. |
-| `SelectList<T> onSelectItem(Consumer<T>)` | Item callback on Enter. |
+| `SelectList<T> onSelect(IntConsumer)` | Index callback on Enter or Space. |
+| `SelectList<T> onSelectItem(Consumer<T>)` | Item callback on Enter or Space. |
 
 ### Table
 
@@ -284,6 +287,7 @@ A horizontal bar (0..1) filled with block glyphs, with an optional centered perc
 | Method | Description |
 |---|---|
 | `ProgressBar value(double)` / `progress(int, int)` | Set progress. |
+| `double value()` | Current progress in [0, 1]. |
 | `ProgressBar showPercent(boolean)` | Overlay the percentage. |
 | `ProgressBar filledStyle(Style)` / `emptyStyle(Style)` | Styling. |
 
@@ -309,7 +313,8 @@ A one-row chart of a value series drawn with block glyphs, auto-scaled, newest o
 ## TreeView
 
 A scrollable, navigable tree of `TreeNode`s. Arrows move the cursor; Enter or Space toggles a
-parent or selects a leaf; Left/Right collapse and expand.
+parent or selects a leaf; Left/Right collapse and expand. Construct with `new TreeView(root)`,
+or `new TreeView(root, false)` to hide the root node.
 
 ```java
 TreeNode root = new TreeNode("project")

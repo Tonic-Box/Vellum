@@ -2,9 +2,9 @@
 
 [Back to index](index.md)
 
-`com.tonic.vellum.Section` is the single universal unit. Every visible thing is a Section;
-containers are Sections that hold Sections. The framework assigns bounds, clips a
-[Canvas](rendering.md) to them, routes keys, and repaints the dirty subtree.
+`com.tonic.vellum.Section` is the base unit. Every visible thing is a Section; containers
+hold other Sections. The framework assigns bounds, clips a [Canvas](rendering.md) to them,
+routes keys, and repaints the dirty subtree.
 
 ## Methods to override
 
@@ -82,6 +82,7 @@ methods below operate on a child passed as an argument.
 | `void mount(Section child)` | Bring a child subtree onto the live path (fires `onMount`). |
 | `void unmount(Section child)` | Remove a child subtree (fires `onUnmount`); the instance is retained. |
 | `void redrawSubtree(Section target)` | Mark a child subtree dirty (e.g. when re-showing it). |
+| `void refreshFocus()` | After changing the active focus target, recompute the focus path so keys and the cursor follow it. |
 
 ```java
 public final class Padding extends Section {

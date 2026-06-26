@@ -28,8 +28,8 @@ For each key:
 4. If a `Navigation` strategy is set and the key is an unhandled arrow, it may move focus.
 5. Otherwise the key is dropped.
 
-A Section consumes what it owns and bubbles the rest, so no central key table is needed.
-Arrow keys belong to the focused Section unless it leaves them unhandled.
+A Section consumes what it owns and bubbles the rest. Arrow keys belong to the focused
+Section unless it leaves them unhandled.
 
 ## isFocused
 
@@ -59,8 +59,7 @@ so the focus path, key routing, and cursor follow the new target.
 
 [Form](widgets.md) implements `FocusContainer` to give in-container Tab traversal: add fields
 (`Button`, `Checkbox`, `TextInput`, etc.), and Tab/Shift-Tab cycle them; nested forms (such as
-a horizontal button row) are traversed depth-first. This backs the dialog helpers and any
-multi-field UI.
+a horizontal button row) are traversed depth-first. This backs the dialog helpers.
 
 ## Modal overlays
 

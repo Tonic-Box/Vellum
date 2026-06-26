@@ -32,9 +32,9 @@ app.run();
 | `onError(Consumer<Throwable>)` | Handle exceptions from tasks, key handlers, and renders. |
 | `build()` | Build the `App`. Throws if no root is set. |
 
-The quit key is checked before dispatch, so it always works as an escape hatch even if a
-section is misbehaving. With a focused `TextInput`, use a non-printable quit (Ctrl-C or
-Escape) so the quit key is not typed into the field.
+The quit key is checked before dispatch, so it works even if a section misbehaves. With a
+focused `TextInput`, use a non-printable quit (Ctrl-C or Escape) so the quit key is not
+typed into the field.
 
 ## App methods
 
@@ -42,8 +42,8 @@ Escape) so the quit key is not typed into the field.
 |---|---|
 | `static App builder()` | New builder. |
 | `static App current()` | The running instance, or null. |
-| `void run()` | Install the terminal and run the loop until `quit()`. Blocks. Restores the terminal on exit, including on exceptions. |
-| `void quit()` | Stop the loop. |
+| `void run()` | Install the terminal and run the loop until `quit()`. Blocks. On exit, unmounts the tree (firing `onUnmount`) and restores the terminal. |
+| `void quit()` | Stop the loop; `run()` then unmounts and restores. |
 | `void post(Runnable)` | Marshal a task onto the UI thread. Thread-safe. |
 | `Cancellable schedule(Duration delay, Runnable)` | Run a task once on the UI thread after a delay. |
 | `Cancellable scheduleAtFixedRate(Duration initial, Duration period, Runnable)` | Run a repeating task on the UI thread. |
@@ -87,8 +87,8 @@ ticker.cancel();
 
 If a task, key handler, or section render throws, the loop keeps running and the exception
 goes to the `onError` handler (called on the UI thread). Without a handler, the first error
-is printed after the terminal is restored. The terminal is always restored on exit, even on
-an unhandled exception.
+is printed after the terminal is restored. The terminal is always restored on exit - on a
+clean quit, on an unhandled exception, and on a process kill (via a JVM shutdown hook).
 
 ## Overlays
 

@@ -8,7 +8,7 @@ The screen is a tree of [Sections](sections.md). Each Section is given a rectang
 (its bounds) and renders into a [Canvas](rendering.md) clipped to that area, in local
 coordinates. Container Sections ([Split](layout.md), [TabHost](widgets.md),
 [BorderSection](widgets.md)) own children and assign each a sub-rectangle. Composition is
-by nesting Sections; there is one tree and one mental model.
+by nesting Sections.
 
 ## The run loop
 
@@ -23,8 +23,8 @@ by nesting Sections; there is one tree and one mental model.
 An idle UI (nothing dirty, no input) writes nothing and uses negligible CPU.
 
 Exceptions thrown by a task, key handler, or render are isolated: the loop routes them to
-the `onError` handler (see [App](app.md)) and keeps running, so one broken section cannot
-take down the UI. The terminal is always restored on exit.
+the `onError` handler (see [App](app.md)) and keeps running. The terminal is always
+restored on exit.
 
 ## Dirty tracking and repaint
 
@@ -44,8 +44,8 @@ backgroundWork(line -> app.post(() -> {
 }));
 ```
 
-`post(Runnable)` is the only thread-safe entry point and is the single concurrency
-primitive to learn. `requestRedraw()` is UI-thread-only; calling it off-thread throws
+`post(Runnable)` is the only thread-safe entry point. `requestRedraw()` is UI-thread-only;
+calling it off-thread throws
 `IllegalStateException`. See [App and Run Loop](app.md) for `post`, `schedule`, and
 `scheduleAtFixedRate`.
 

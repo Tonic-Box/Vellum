@@ -38,6 +38,7 @@ are pure: `take*` returns a strip; `split*` returns `{strip, remainder}`.
 | `boolean isEmpty()` | True if zero cells. |
 | `boolean contains(int px, int py)` | Point test. |
 | `Rect inset(int amount)` | Shrink on all sides. |
+| `Rect intersect(Rect other)` | Overlap of the two rects; empty when disjoint. |
 | `Rect takeTop(int)`, `takeBottom(int)`, `takeLeft(int)`, `takeRight(int)` | A strip. |
 | `Rect[] splitTop(int)`, `splitBottom(int)`, `splitLeft(int)`, `splitRight(int)` | `{strip, remainder}`. |
 
@@ -94,9 +95,7 @@ Terminals without 256-color/truecolor support approximate or ignore these.
 
 `com.tonic.vellum.CharWidth.of(int codePoint)` (and `of(char)`) gives the display width:
 0 for zero-width combining marks, 2 for East Asian wide/fullwidth glyphs and common emoji,
-1 otherwise. `CharWidth.width(CharSequence)` returns the total display width of a string.
-Drawing uses these: wide glyphs occupy two cells, zero-width marks are dropped, alignment
-and truncation are display-width aware and never split a wide glyph. Astral (supplementary)
-code points are supported; multi-code-point grapheme clusters (emoji ZWJ sequences,
-skin-tone modifiers, regional-indicator flags) are measured per code point, not as a single
-cluster.
+1 otherwise. `CharWidth.width(CharSequence)` returns the total width of a string. Drawing is
+display-width aware: wide glyphs take two cells, zero-width marks are dropped, and truncation
+never splits a wide glyph. Astral code points are supported; grapheme clusters (e.g. emoji
+ZWJ sequences) are measured per code point, not as one cluster.
