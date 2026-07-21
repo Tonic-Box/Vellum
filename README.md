@@ -32,8 +32,8 @@ build/install/Vellum/bin/Vellum        # Vellum.bat on Windows
 
 ## Documentation
 
-Full documentation is in [docs/index.md](docs/index.md). New users should start with the
-[step-by-step tutorial](docs/tutorial.md).
+Full documentation is in [md-docs/index.md](md-docs/index.md). New users should start with the
+[step-by-step tutorial](md-docs/tutorial.md).
 
 ## License
 
