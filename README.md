@@ -6,6 +6,7 @@ resize, and thread marshalling. JLine is used internally behind a swappable term
 interface and does not appear in the public API.
 
 - Java 8+
+- [JavaDocs](https://tonic-box.github.io/Vellum/)
 
 ## Build
 
