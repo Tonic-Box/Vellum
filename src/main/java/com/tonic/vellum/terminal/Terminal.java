@@ -3,25 +3,28 @@ package com.tonic.vellum.terminal;
 import com.tonic.vellum.input.KeyEvent;
 
 /**
- * The terminal driver contract. The framework talks only to this interface; the default
- * implementation is JLine-backed, and any driver that satisfies these methods can replace
- * it without touching the public API.
+ * The terminal driver contract. The default implementation is JLine-backed, and any
+ * driver that satisfies these methods can replace it without touching the public API.
  */
-public interface Terminal extends AutoCloseable {
-
-    /** Switches the terminal into raw (unbuffered, no-echo) mode. */
+public interface Terminal extends AutoCloseable
+{
+    /**
+     * Switches the terminal into raw (unbuffered, no-echo) mode.
+     */
     void enterRawMode();
 
-    /** Switches to the alternate screen buffer so the user's scrollback is preserved. */
+    /**
+     * Switches to the alternate screen buffer so the user's scrollback is preserved.
+     */
     void enterAlternateScreen();
 
-    /** Restores the terminal to the main screen, cooked mode, and shown cursor. Idempotent. */
+    /**
+     * Restores the terminal to the main screen, cooked mode, and shown cursor. Idempotent.
+     */
     void restore();
 
     /**
-     * Returns the current terminal size.
-     *
-     * @return the size in cells
+     * @return the current size in cells
      */
     TerminalSize size();
 
@@ -47,13 +50,19 @@ public interface Terminal extends AutoCloseable {
      */
     void write(String text);
 
-    /** Flushes queued output to the terminal. */
+    /**
+     * Flushes queued output to the terminal.
+     */
     void flush();
 
-    /** Hides the cursor. */
+    /**
+     * Hides the cursor.
+     */
     void hideCursor();
 
-    /** Shows the cursor. */
+    /**
+     * Shows the cursor.
+     */
     void showCursor();
 
     /**
@@ -64,9 +73,9 @@ public interface Terminal extends AutoCloseable {
      */
     void moveCursor(int x, int y);
 
-    /** Restores the terminal by calling {@link #restore()}. */
     @Override
-    default void close() {
+    default void close()
+    {
         restore();
     }
 }

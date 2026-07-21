@@ -4,8 +4,8 @@ package com.tonic.vellum.input;
  * An immutable, normalized key event. The terminal driver translates raw escape sequences
  * into these.
  */
-public final class KeyEvent {
-
+public final class KeyEvent
+{
     private final Key code;
     private final char ch;
     private final boolean ctrl;
@@ -16,12 +16,13 @@ public final class KeyEvent {
      * Creates a key event.
      *
      * @param code the logical key
-     * @param ch the character, valid when {@code code} is {@link Key#CHAR}
+     * @param ch the character, valid when {@code code} is CHAR
      * @param ctrl whether the Ctrl modifier is held
      * @param alt whether the Alt modifier is held
      * @param shift whether the Shift modifier is held
      */
-    public KeyEvent(Key code, char ch, boolean ctrl, boolean alt, boolean shift) {
+    public KeyEvent(Key code, char ch, boolean ctrl, boolean alt, boolean shift)
+    {
         this.code = code;
         this.ch = ch;
         this.ctrl = ctrl;
@@ -35,7 +36,8 @@ public final class KeyEvent {
      * @param code the logical key
      * @return the key event
      */
-    public static KeyEvent special(Key code) {
+    public static KeyEvent special(Key code)
+    {
         return new KeyEvent(code, '\0', false, false, false);
     }
 
@@ -48,7 +50,8 @@ public final class KeyEvent {
      * @param shift whether the Shift modifier is held
      * @return the key event
      */
-    public static KeyEvent special(Key code, boolean ctrl, boolean alt, boolean shift) {
+    public static KeyEvent special(Key code, boolean ctrl, boolean alt, boolean shift)
+    {
         return new KeyEvent(code, '\0', ctrl, alt, shift);
     }
 
@@ -58,7 +61,8 @@ public final class KeyEvent {
      * @param ch the character
      * @return the key event
      */
-    public static KeyEvent character(char ch) {
+    public static KeyEvent character(char ch)
+    {
         return new KeyEvent(Key.CHAR, ch, false, false, false);
     }
 
@@ -71,35 +75,63 @@ public final class KeyEvent {
      * @param shift whether the Shift modifier is held
      * @return the key event
      */
-    public static KeyEvent character(char ch, boolean ctrl, boolean alt, boolean shift) {
+    public static KeyEvent character(char ch, boolean ctrl, boolean alt, boolean shift)
+    {
         return new KeyEvent(Key.CHAR, ch, ctrl, alt, shift);
     }
 
-    /** @return the logical key */
-    public Key code() { return code; }
-
-    /** @return the character, valid when {@code code() == CHAR} */
-    public char ch() { return ch; }
-
-    /** @return true when the Ctrl modifier is held */
-    public boolean ctrl() { return ctrl; }
-
-    /** @return true when the Alt modifier is held */
-    public boolean alt() { return alt; }
-
-    /** @return true when the Shift modifier is held */
-    public boolean shift() { return shift; }
+    /**
+     * @return the logical key
+     */
+    public Key code()
+    {
+        return code;
+    }
 
     /**
-     * Reports whether this event's logical key equals {@code k}.
-     *
-     * @param k the key to compare against
-     * @return true when the logical key equals {@code k}
+     * @return the character, valid when {@code code() == CHAR}
      */
-    public boolean is(Key k) { return code == k; }
+    public char ch()
+    {
+        return ch;
+    }
+
+    /**
+     * @return true when the Ctrl modifier is held
+     */
+    public boolean ctrl()
+    {
+        return ctrl;
+    }
+
+    /**
+     * @return true when the Alt modifier is held
+     */
+    public boolean alt()
+    {
+        return alt;
+    }
+
+    /**
+     * @return true when the Shift modifier is held
+     */
+    public boolean shift()
+    {
+        return shift;
+    }
+
+    /**
+     * @param k the key to compare against
+     * @return true when this event's logical key equals k
+     */
+    public boolean is(Key k)
+    {
+        return code == k;
+    }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         StringBuilder sb = new StringBuilder("KeyEvent[").append(code);
         if (code == Key.CHAR) sb.append(" '").append(ch).append('\'');
         if (ctrl) sb.append(" +ctrl");

@@ -4,36 +4,29 @@ import com.tonic.vellum.geom.Rect;
 import com.tonic.vellum.style.Style;
 
 /**
- * A drawing surface clipped to a {@link Section}'s bounds. Coordinates are local:
- * {@code (0,0)} is the top-left of the section. Writes outside the section's width or height
- * are silently discarded. A Canvas only mutates cells in the framework's back buffer; it
- * does not emit escape codes.
+ * A drawing surface clipped to a section's bounds. Coordinates are local with (0,0) at the
+ * section's top-left; out-of-range writes are silently discarded, and writes mutate the
+ * back buffer without emitting escape codes.
  */
-public interface Canvas {
-
+public interface Canvas
+{
     /**
-     * Return the canvas width in columns.
-     *
-     * @return the width in columns
+     * @return the canvas width in columns
      */
     int width();
 
     /**
-     * Return the canvas height in rows.
-     *
-     * @return the height in rows
+     * @return the canvas height in rows
      */
     int height();
 
     /**
-     * Return the local bounds: always origin {@code (0,0)} with this canvas's width and height.
-     *
-     * @return the local bounds
+     * @return the local bounds: origin (0,0) with this canvas's width and height
      */
     Rect bounds();
 
     /**
-     * Write a character with the default style.
+     * Writes a character with the default style.
      *
      * @param x the local column
      * @param y the local row
@@ -42,7 +35,7 @@ public interface Canvas {
     void put(int x, int y, char c);
 
     /**
-     * Write a character with an explicit style.
+     * Writes a character with an explicit style.
      *
      * @param x the local column
      * @param y the local row
@@ -52,7 +45,7 @@ public interface Canvas {
     void put(int x, int y, char c, Style style);
 
     /**
-     * Write a Unicode code point (including supplementary/astral) with the default style.
+     * Writes a Unicode code point, including supplementary characters, with the default style.
      *
      * @param x the local column
      * @param y the local row
@@ -61,7 +54,7 @@ public interface Canvas {
     void putCodePoint(int x, int y, int codePoint);
 
     /**
-     * Write a Unicode code point (including supplementary/astral) with an explicit style.
+     * Writes a Unicode code point, including supplementary characters, with an explicit style.
      *
      * @param x the local column
      * @param y the local row
@@ -71,7 +64,7 @@ public interface Canvas {
     void putCodePoint(int x, int y, int codePoint, Style style);
 
     /**
-     * Write a single line of text with the default style, truncated at the right edge.
+     * Writes a single line of text with the default style, truncated at the right edge.
      *
      * @param x the local column of the first character
      * @param y the local row
@@ -80,7 +73,7 @@ public interface Canvas {
     void put(int x, int y, String text);
 
     /**
-     * Write a single line of text, truncated at the right edge.
+     * Writes a single line of text, truncated at the right edge.
      *
      * @param x the local column of the first character
      * @param y the local row
@@ -90,7 +83,7 @@ public interface Canvas {
     void put(int x, int y, String text, Style style);
 
     /**
-     * Fill a local rectangle with a character and style.
+     * Fills a local rectangle with a character and style.
      *
      * @param area the local rectangle to fill
      * @param c the character to fill with
@@ -98,11 +91,13 @@ public interface Canvas {
      */
     void fill(Rect area, char c, Style style);
 
-    /** Fill the entire canvas with spaces in the default style. */
+    /**
+     * Fills the entire canvas with spaces in the default style.
+     */
     void clear();
 
     /**
-     * Return a further-clipped sub-canvas whose origin is {@code sub}'s top-left.
+     * Returns a further-clipped sub-canvas whose origin is the given rectangle's top-left.
      *
      * @param sub the local rectangle to clip to
      * @return the sub-canvas

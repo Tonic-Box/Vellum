@@ -10,23 +10,23 @@ import com.tonic.vellum.layout.Constraint;
 import java.util.function.Consumer;
 
 /**
- * Static helpers that open modal dialogs as centered, bordered {@link Form} overlays. Each
- * helper returns the {@link OverlayHandle} for the opened overlay. These methods must be
- * called on the UI thread.
+ * Static helpers that open modal dialogs as centered, bordered Form overlays; all methods must be called on the UI thread.
  */
-public final class Dialogs {
-
-    private Dialogs() {}
+public final class Dialogs
+{
+    private Dialogs()
+    {
+    }
 
     /**
      * Opens a modal alert showing a message with an OK button; closes on OK or ESC.
-     * Must be called on the UI thread.
      *
      * @param app the application to open the overlay on
      * @param message the message to display
      * @return the handle for the opened overlay
      */
-    public static OverlayHandle alert(App app, String message) {
+    public static OverlayHandle alert(App app, String message)
+    {
         OverlayHandle[] handle = new OverlayHandle[1];
         Button ok = new Button("OK").onActivate(() -> handle[0].close());
 
@@ -41,16 +41,21 @@ public final class Dialogs {
 
     /**
      * Opens a modal confirmation with Yes and No buttons; Yes runs the callback then closes,
-     * No or ESC just close. Must be called on the UI thread.
+     * No or ESC just close.
      *
      * @param app the application to open the overlay on
      * @param message the message to display
      * @param onYes the action run when Yes is chosen
      * @return the handle for the opened overlay
      */
-    public static OverlayHandle confirm(App app, String message, Runnable onYes) {
+    public static OverlayHandle confirm(App app, String message, Runnable onYes)
+    {
         OverlayHandle[] handle = new OverlayHandle[1];
-        Button yes = new Button("Yes").onActivate(() -> { onYes.run(); handle[0].close(); });
+        Button yes = new Button("Yes").onActivate(() ->
+        {
+            onYes.run();
+            handle[0].close();
+        });
         Button no = new Button("No").onActivate(() -> handle[0].close());
 
         Form buttons = Form.row();
@@ -67,18 +72,22 @@ public final class Dialogs {
 
     /**
      * Opens a modal prompt with a title, a text field, and OK and Cancel buttons; OK or Enter
-     * in the field submits the entered text then closes, Cancel or ESC just close. Must be
-     * called on the UI thread.
+     * in the field submits the entered text then closes, Cancel or ESC just close.
      *
      * @param app the application to open the overlay on
      * @param title the title shown above the field
-     * @param onSubmit consumer invoked with the entered text on submit
+     * @param onSubmit the submit handler
      * @return the handle for the opened overlay
      */
-    public static OverlayHandle prompt(App app, String title, Consumer<String> onSubmit) {
+    public static OverlayHandle prompt(App app, String title, Consumer<String> onSubmit)
+    {
         OverlayHandle[] handle = new OverlayHandle[1];
         TextInput input = new TextInput();
-        Runnable submit = () -> { onSubmit.accept(input.text()); handle[0].close(); };
+        Runnable submit = () ->
+        {
+            onSubmit.accept(input.text());
+            handle[0].close();
+        };
         input.onSubmit(text -> submit.run());
 
         Button ok = new Button("OK").onActivate(submit);
@@ -96,12 +105,14 @@ public final class Dialogs {
         return handle[0];
     }
 
-    private static OverlayHandle open(App app, Form form, int width, int height) {
+    private static OverlayHandle open(App app, Form form, int width, int height)
+    {
         Section content = form.bordered();
         return app.openOverlay(content, Placement.centered(width, height), form);
     }
 
-    private static int width(String text, int min) {
+    private static int width(String text, int min)
+    {
         return Math.max(min, CharWidth.width(text) + 4);
     }
 }

@@ -10,12 +10,10 @@ import java.util.List;
 import java.util.function.IntConsumer;
 
 /**
- * A single-choice option list. The cursor moves with arrows; ENTER or SPACE chooses the
- * option under the cursor. The chosen option is marked {@code (o)}; others {@code ( )}.
- * Built on {@link AbstractListSection}.
+ * A single-choice option list; ENTER or SPACE chooses the option under the cursor, marked {@code (o)}.
  */
-public final class RadioGroup extends AbstractListSection {
-
+public final class RadioGroup extends AbstractListSection
+{
     private final List<String> options;
     private int chosen;
     private IntConsumer onChange = i -> { };
@@ -25,16 +23,16 @@ public final class RadioGroup extends AbstractListSection {
      *
      * @param options the option labels in order
      */
-    public RadioGroup(String... options) {
+    public RadioGroup(String... options)
+    {
         this.options = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(options)));
     }
 
     /**
-     * Returns the index of the chosen option.
-     *
-     * @return the chosen option index
+     * @return the index of the chosen option
      */
-    public int chosenIndex() {
+    public int chosenIndex()
+    {
         return chosen;
     }
 
@@ -45,8 +43,10 @@ public final class RadioGroup extends AbstractListSection {
      * @param index the option index to choose
      * @return this RadioGroup for chaining
      */
-    public RadioGroup choose(int index) {
-        if (index >= 0 && index < options.size() && index != chosen) {
+    public RadioGroup choose(int index)
+    {
+        if (index >= 0 && index < options.size() && index != chosen)
+        {
             chosen = index;
             onChange.accept(chosen);
             requestRedraw();
@@ -60,40 +60,27 @@ public final class RadioGroup extends AbstractListSection {
      * @param handler the change handler
      * @return this RadioGroup for chaining
      */
-    public RadioGroup onChange(IntConsumer handler) {
+    public RadioGroup onChange(IntConsumer handler)
+    {
         this.onChange = handler;
         return this;
     }
 
-    /**
-     * Returns the number of options.
-     *
-     * @return the option count
-     */
     @Override
-    protected int rowCount() {
+    protected int rowCount()
+    {
         return options.size();
     }
 
-    /**
-     * Draws the option label prefixed with its chosen or unchosen marker.
-     *
-     * @param row the single-row canvas to draw into
-     * @param index the option index
-     * @param style the style the row has been filled with
-     */
     @Override
-    protected void renderRow(Canvas row, int index, Style style) {
+    protected void renderRow(Canvas row, int index, Style style)
+    {
         row.put(0, 0, (index == chosen ? "(o) " : "( ) ") + options.get(index), style);
     }
 
-    /**
-     * Chooses the activated option.
-     *
-     * @param index the index of the activated option
-     */
     @Override
-    protected void onActivate(int index) {
+    protected void onActivate(int index)
+    {
         choose(index);
     }
 }

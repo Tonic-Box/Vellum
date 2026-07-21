@@ -5,19 +5,17 @@ import com.tonic.vellum.geom.Rect;
 import java.util.List;
 
 /**
- * Constraint solver that divides an available rect among children along one axis. The
- * result exactly tiles the available extent with no gaps or overlap.
- *
- * <p>Fixed and percent sizes form each item's base; min, max, and fill items also carry a
- * flex weight, with min and max applying a floor or cap. Remaining space is distributed
- * across weights respecting caps; any rounding remainder goes to the last flexible item,
- * or stretches the last item if none is flexible, so the sizes always sum to the extent.
+ * A constraint solver that divides a rect among children along one axis, always tiling
+ * the extent exactly: any rounding remainder goes to the last flexible item, or stretches
+ * the last item if none is flexible.
  */
-public final class LayoutSolver {
-
+public final class LayoutSolver
+{
     private static final int UNCAPPED = Integer.MAX_VALUE;
 
-    private LayoutSolver() {}
+    private LayoutSolver()
+    {
+    }
 
     /**
      * Divides the available rect among the constraints along the given axis.
@@ -27,10 +25,12 @@ public final class LayoutSolver {
      * @param axis the axis to divide along
      * @return one rect per constraint that together tile the available rect
      */
-    public static Rect[] solve(Rect available, List<Constraint> constraints, Axis axis) {
+    public static Rect[] solve(Rect available, List<Constraint> constraints, Axis axis)
+    {
         int n = constraints.size();
         Rect[] result = new Rect[n];
-        if (n == 0) {
+        if (n == 0)
+        {
             return result;
         }
 
@@ -39,9 +39,11 @@ public final class LayoutSolver {
         int[] weight = new int[n];
         int[] cap = new int[n];
 
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n; i++)
+        {
             Constraint c = constraints.get(i);
-            switch (c.kind()) {
+            switch (c.kind())
+            {
                 case FIXED:
                     size[i] = c.value();
                     weight[i] = 0;
@@ -72,33 +74,43 @@ public final class LayoutSolver {
         }
 
         int total = sum(size);
-        if (total > extent) {
+        if (total > extent)
+        {
             shrinkToFit(size, total - extent);
-        } else if (total < extent) {
+        }
+        else if (total < extent)
+        {
             distribute(size, weight, cap, extent - total);
         }
 
         return toRects(available, size, axis);
     }
 
-    /** Distribute {@code remaining} cells across weighted items, respecting caps. */
-    private static void distribute(int[] size, int[] weight, int[] cap, int remaining) {
-        while (remaining > 0) {
+    private static void distribute(int[] size, int[] weight, int[] cap, int remaining)
+    {
+        while (remaining > 0)
+        {
             int totalWeight = 0;
-            for (int i = 0; i < size.length; i++) {
-                if (weight[i] > 0 && size[i] < cap[i]) {
+            for (int i = 0; i < size.length; i++)
+            {
+                if (weight[i] > 0 && size[i] < cap[i])
+                {
                     totalWeight += weight[i];
                 }
             }
-            if (totalWeight == 0) {
+            if (totalWeight == 0)
+            {
                 break;
             }
             int share = remaining / totalWeight;
-            if (share == 0) {
-                break; // fall through to remainder rounding below
+            if (share == 0)
+            {
+                break;
             }
-            for (int i = 0; i < size.length && remaining > 0; i++) {
-                if (weight[i] == 0 || size[i] >= cap[i]) {
+            for (int i = 0; i < size.length && remaining > 0; i++)
+            {
+                if (weight[i] == 0 || size[i] >= cap[i])
+                {
                     continue;
                 }
                 int grant = share * weight[i];
@@ -107,51 +119,62 @@ public final class LayoutSolver {
                 remaining -= room;
             }
         }
-        if (remaining > 0) {
+        if (remaining > 0)
+        {
             assignRemainder(size, weight, cap, remaining);
         }
     }
 
-    /** Hand leftover cells one-by-one to the last flexible item with room, else the last item. */
-    private static void assignRemainder(int[] size, int[] weight, int[] cap, int remaining) {
+    private static void assignRemainder(int[] size, int[] weight, int[] cap, int remaining)
+    {
         int target = -1;
-        for (int i = size.length - 1; i >= 0; i--) {
-            if (weight[i] > 0 && size[i] < cap[i]) {
+        for (int i = size.length - 1; i >= 0; i--)
+        {
+            if (weight[i] > 0 && size[i] < cap[i])
+            {
                 target = i;
                 break;
             }
         }
-        if (target >= 0) {
+        if (target >= 0)
+        {
             int room = cap[target] == UNCAPPED ? remaining : Math.min(remaining, cap[target] - size[target]);
             size[target] += room;
             remaining -= room;
         }
-        if (remaining > 0) {
-            // degenerate (all fixed/capped and underfilled): stretch the last item to avoid a gap
+        if (remaining > 0)
+        {
             size[size.length - 1] += remaining;
         }
     }
 
-    /** Reduce trailing items to remove {@code over} cells, clamping at zero. */
-    private static void shrinkToFit(int[] size, int over) {
-        for (int i = size.length - 1; i >= 0 && over > 0; i--) {
+    private static void shrinkToFit(int[] size, int over)
+    {
+        for (int i = size.length - 1; i >= 0 && over > 0; i--)
+        {
             int take = Math.min(over, size[i]);
             size[i] -= take;
             over -= take;
         }
     }
 
-    private static Rect[] toRects(Rect available, int[] size, Axis axis) {
+    private static Rect[] toRects(Rect available, int[] size, Axis axis)
+    {
         Rect[] result = new Rect[size.length];
-        if (axis == Axis.HORIZONTAL) {
+        if (axis == Axis.HORIZONTAL)
+        {
             int x = available.x();
-            for (int i = 0; i < size.length; i++) {
+            for (int i = 0; i < size.length; i++)
+            {
                 result[i] = new Rect(x, available.y(), size[i], available.height());
                 x += size[i];
             }
-        } else {
+        }
+        else
+        {
             int y = available.y();
-            for (int i = 0; i < size.length; i++) {
+            for (int i = 0; i < size.length; i++)
+            {
                 result[i] = new Rect(available.x(), y, available.width(), size[i]);
                 y += size[i];
             }
@@ -159,9 +182,11 @@ public final class LayoutSolver {
         return result;
     }
 
-    private static int sum(int[] a) {
+    private static int sum(int[] a)
+    {
         int s = 0;
-        for (int v : a) {
+        for (int v : a)
+        {
             s += v;
         }
         return s;

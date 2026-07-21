@@ -9,15 +9,8 @@ import org.jline.utils.NonBlockingReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-/**
- * JLine-backed {@link Terminal}. All JLine imports are confined to this file so the rest
- * of the framework never depends on JLine; replacing this class with another driver
- * requires no changes elsewhere. Key decoding is delegated to {@link InputDecoder}, fed
- * by the JLine non-blocking reader.
- */
-final class JLineTerminal implements Terminal {
-
-    /** Control Sequence Introducer: ESC + '['. Built from char codes to keep the source ASCII. */
+final class JLineTerminal implements Terminal
+{
     private static final String CSI = new String(new char[]{(char) 27, (char) 91});
     private static final String ALT_SCREEN_ON = CSI + "?1049h";
     private static final String ALT_SCREEN_OFF = CSI + "?1049l";
@@ -33,119 +26,150 @@ final class JLineTerminal implements Terminal {
     private boolean altScreen;
     private boolean restored;
 
-    JLineTerminal() {
-        try {
+    JLineTerminal()
+    {
+        try
+        {
             this.terminal = TerminalBuilder.builder()
                     .system(true)
                     .nativeSignals(true)
                     .build();
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             throw new IllegalStateException("Unable to open system terminal", e);
         }
         String type = terminal.getType();
-        if (type == null || type.startsWith(org.jline.terminal.Terminal.TYPE_DUMB)) {
-            try {
+        if (type == null || type.startsWith(org.jline.terminal.Terminal.TYPE_DUMB))
+        {
+            try
+            {
                 terminal.close();
-            } catch (IOException ignored) {
-                // closing a dumb terminal; nothing to recover
             }
-            throw new IllegalStateException(
-                    "Vellum requires an interactive ANSI terminal; none was detected (terminal type: "
-                            + type + "). Run the application directly in a terminal, not through a pipe or non-TTY launcher.");
+            catch (IOException ignored)
+            {
+            }
+            throw new IllegalStateException("Vellum requires an interactive ANSI terminal; none was detected (terminal type: " + type + "). Run the application directly in a terminal, not through a pipe or non-TTY launcher.");
         }
         this.reader = terminal.reader();
         this.writer = terminal.writer();
-        this.source = timeout -> {
-            try {
+        this.source = timeout ->
+        {
+            try
+            {
                 return reader.read(timeout <= 0 ? 1 : timeout);
-            } catch (IOException e) {
+            }
+            catch (IOException e)
+            {
                 return InputDecoder.IntSource.EOF;
             }
         };
     }
 
     @Override
-    public void enterRawMode() {
-        if (savedAttributes == null) {
+    public void enterRawMode()
+    {
+        if (savedAttributes == null)
+        {
             savedAttributes = terminal.getAttributes();
         }
         terminal.enterRawMode();
     }
 
     @Override
-    public void enterAlternateScreen() {
+    public void enterAlternateScreen()
+    {
         write(ALT_SCREEN_ON);
         altScreen = true;
         flush();
     }
 
     @Override
-    public void restore() {
-        if (restored) {
+    public void restore()
+    {
+        if (restored)
+        {
             return;
         }
         restored = true;
-        try {
+        try
+        {
             showCursor();
-            if (altScreen) {
+            if (altScreen)
+            {
                 write(ALT_SCREEN_OFF);
                 altScreen = false;
             }
             flush();
-            if (savedAttributes != null) {
+            if (savedAttributes != null)
+            {
                 terminal.setAttributes(savedAttributes);
             }
-        } finally {
-            try {
+        }
+        finally
+        {
+            try
+            {
                 terminal.close();
-            } catch (IOException ignored) {
-                // best-effort restore
+            }
+            catch (IOException ignored)
+            {
             }
         }
     }
 
     @Override
-    public TerminalSize size() {
+    public TerminalSize size()
+    {
         Size s = terminal.getSize();
         return new TerminalSize(s.getColumns(), s.getRows());
     }
 
     @Override
-    public void setResizeListener(Runnable listener) {
-        terminal.handle(org.jline.terminal.Terminal.Signal.WINCH, signal -> {
-            if (listener != null) {
+    public void setResizeListener(Runnable listener)
+    {
+        terminal.handle(org.jline.terminal.Terminal.Signal.WINCH, signal ->
+        {
+            if (listener != null)
+            {
                 listener.run();
             }
         });
     }
 
     @Override
-    public KeyEvent readKey(long timeoutMillis) {
+    public KeyEvent readKey(long timeoutMillis)
+    {
         return InputDecoder.readKey(source, timeoutMillis);
     }
 
     @Override
-    public void write(String text) {
+    public void write(String text)
+    {
         writer.write(text);
     }
 
     @Override
-    public void flush() {
+    public void flush()
+    {
         writer.flush();
     }
 
     @Override
-    public void hideCursor() {
+    public void hideCursor()
+    {
         write(CURSOR_HIDE);
     }
 
     @Override
-    public void showCursor() {
+    public void showCursor()
+    {
         write(CURSOR_SHOW);
     }
 
     @Override
-    public void moveCursor(int x, int y) {
+    public void moveCursor(int x, int y)
+    {
         write(CSI + (y + 1) + ";" + (x + 1) + "H");
     }
 }

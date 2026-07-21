@@ -6,13 +6,12 @@ import com.tonic.vellum.input.Key;
 import java.util.List;
 
 /**
- * Optional spatial focus movement: when the focused section leaves an arrow key
- * unhandled, the navigation strategy may move focus to an adjacent target.
+ * Strategy that moves focus to an adjacent target when the focused section leaves an arrow key unhandled.
  */
-public interface Navigation {
-
+public interface Navigation
+{
     /**
-     * Chooses the focus target reached by pressing {@code direction} from {@code current}.
+     * Chooses the focus target reached by moving in the given direction from the current section.
      *
      * @param current the currently focused section
      * @param direction the arrow key pressed
@@ -22,11 +21,10 @@ public interface Navigation {
     Section resolve(Section current, Key direction, List<Section> targets);
 
     /**
-     * Returns an adjacency-based navigation strategy using the targets' on-screen bounds.
-     *
-     * @return the spatial navigation strategy
+     * @return an adjacency-based navigation strategy using the targets' on-screen bounds
      */
-    static Navigation spatial() {
+    static Navigation spatial()
+    {
         return new SpatialNavigation();
     }
 }

@@ -3,9 +3,11 @@ package com.tonic.vellum.widget;
 import com.tonic.vellum.Canvas;
 import com.tonic.vellum.style.Style;
 
-/** A single line of static or settable text, with optional horizontal alignment. */
-public final class LabelSection extends SingleRowSection {
-
+/**
+ * A single line of static or settable text, with optional horizontal alignment.
+ */
+public final class LabelSection extends SingleRowSection
+{
     private String text;
     private Alignment alignment = Alignment.LEFT;
     private Style style = Style.NORMAL;
@@ -15,7 +17,8 @@ public final class LabelSection extends SingleRowSection {
      *
      * @param text the label text
      */
-    public LabelSection(String text) {
+    public LabelSection(String text)
+    {
         this.text = text == null ? "" : text;
     }
 
@@ -25,7 +28,8 @@ public final class LabelSection extends SingleRowSection {
      * @param text the new text
      * @return this LabelSection for chaining
      */
-    public LabelSection setText(String text) {
+    public LabelSection setText(String text)
+    {
         this.text = text == null ? "" : text;
         requestRedraw();
         return this;
@@ -37,7 +41,8 @@ public final class LabelSection extends SingleRowSection {
      * @param alignment the alignment
      * @return this LabelSection for chaining
      */
-    public LabelSection alignment(Alignment alignment) {
+    public LabelSection alignment(Alignment alignment)
+    {
         this.alignment = alignment;
         requestRedraw();
         return this;
@@ -49,29 +54,24 @@ public final class LabelSection extends SingleRowSection {
      * @param style the style
      * @return this LabelSection for chaining
      */
-    public LabelSection style(Style style) {
+    public LabelSection style(Style style)
+    {
         this.style = style;
         requestRedraw();
         return this;
     }
 
     /**
-     * Returns the label text.
-     *
      * @return the current text
      */
-    public String text() {
+    public String text()
+    {
         return text;
     }
 
-    /**
-     * Draws the aligned label text on the centered row.
-     *
-     * @param canvas the canvas to draw into
-     * @param y the centered row index to draw on
-     */
     @Override
-    protected void renderRow(Canvas canvas, int y) {
+    protected void renderRow(Canvas canvas, int y)
+    {
         Text.putAligned(canvas, y, text, alignment, style);
     }
 }

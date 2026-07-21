@@ -3,30 +3,36 @@ package com.tonic.vellum.style;
 import com.tonic.vellum.Maths;
 
 /**
- * A terminal color: the terminal default, one of the 16 named ANSI colors, a 256-color
- * palette index, or 24-bit RGB. Immutable value type; instances compare by value.
+ * An immutable terminal color: the terminal default, a named ANSI color, a 256-color palette index, or 24-bit RGB. Instances compare by value.
  */
-public final class Color {
-
-    private enum Kind { DEFAULT, NAMED, INDEXED, RGB }
+public final class Color
+{
+    private enum Kind
+    {
+        DEFAULT, NAMED, INDEXED, RGB
+    }
 
     private final Kind kind;
-    private final int a; // NAMED: ansi 0-15; INDEXED: 0-255; RGB: red
-    private final int b; // RGB: green
-    private final int c; // RGB: blue
+    private final int a;
+    private final int b;
+    private final int c;
 
-    private Color(Kind kind, int a, int b, int c) {
+    private Color(Kind kind, int a, int b, int c)
+    {
         this.kind = kind;
         this.a = a;
         this.b = b;
         this.c = c;
     }
 
-    private static Color named(int index) {
+    private static Color named(int index)
+    {
         return new Color(Kind.NAMED, index, 0, 0);
     }
 
-    /** The terminal's default color. */
+    /**
+     * The terminal's default color.
+     */
     public static final Color DEFAULT = new Color(Kind.DEFAULT, 0, 0, 0);
 
     public static final Color BLACK = named(0);
@@ -52,7 +58,8 @@ public final class Color {
      * @param index palette index, clamped to 0-255
      * @return the indexed color
      */
-    public static Color ansi256(int index) {
+    public static Color ansi256(int index)
+    {
         return new Color(Kind.INDEXED, clamp(index, 255), 0, 0);
     }
 
@@ -64,35 +71,31 @@ public final class Color {
      * @param blue blue channel, clamped to 0-255
      * @return the RGB color
      */
-    public static Color rgb(int red, int green, int blue) {
+    public static Color rgb(int red, int green, int blue)
+    {
         return new Color(Kind.RGB, clamp(red, 255), clamp(green, 255), clamp(blue, 255));
     }
 
     /**
-     * Returns the SGR parameters for using this color as the foreground.
-     *
-     * @return the SGR parameters without the leading separator
+     * @return the SGR parameters for this color as the foreground, without the leading separator
      */
-    public String foregroundSgr() {
+    public String foregroundSgr()
+    {
         return sgr(30, 90, 38, 39);
     }
 
     /**
-     * Returns the SGR parameters for using this color as the background.
-     *
-     * @return the SGR parameters without the leading separator
+     * @return the SGR parameters for this color as the background, without the leading separator
      */
-    public String backgroundSgr() {
+    public String backgroundSgr()
+    {
         return sgr(40, 100, 48, 49);
     }
 
-    /**
-     * Build the SGR parameters for this color given the role's base codes: the standard and
-     * bright bases for the 16 named colors, the {@code 38}/{@code 48} selector for
-     * indexed/RGB, and the reset code for the terminal default.
-     */
-    private String sgr(int base, int brightBase, int extended, int dflt) {
-        switch (kind) {
+    private String sgr(int base, int brightBase, int extended, int dflt)
+    {
+        switch (kind)
+        {
             case NAMED:   return Integer.toString(a < 8 ? base + a : brightBase + (a - 8));
             case INDEXED: return extended + ";5;" + a;
             case RGB:     return extended + ";2;" + a + ";" + b + ";" + c;
@@ -100,12 +103,14 @@ public final class Color {
         }
     }
 
-    private static int clamp(int value, int max) {
+    private static int clamp(int value, int max)
+    {
         return Maths.clamp(value, 0, max);
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(Object o)
+    {
         if (this == o) return true;
         if (!(o instanceof Color)) return false;
         Color other = (Color) o;
@@ -113,7 +118,8 @@ public final class Color {
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         int h = kind.hashCode();
         h = 31 * h + a;
         h = 31 * h + b;
@@ -122,8 +128,10 @@ public final class Color {
     }
 
     @Override
-    public String toString() {
-        switch (kind) {
+    public String toString()
+    {
+        switch (kind)
+        {
             case NAMED:   return "Color[ansi " + a + "]";
             case INDEXED: return "Color[ansi256 " + a + "]";
             case RGB:     return "Color[rgb " + a + "," + b + "," + c + "]";

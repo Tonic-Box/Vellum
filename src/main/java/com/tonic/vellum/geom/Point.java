@@ -1,8 +1,10 @@
 package com.tonic.vellum.geom;
 
-/** An immutable point in cell coordinates. */
-public final class Point {
-
+/**
+ * An immutable point in cell coordinates.
+ */
+public final class Point
+{
     private final int x;
     private final int y;
 
@@ -12,19 +14,31 @@ public final class Point {
      * @param x x coordinate in cells
      * @param y y coordinate in cells
      */
-    public Point(int x, int y) {
+    public Point(int x, int y)
+    {
         this.x = x;
         this.y = y;
     }
 
-    /** @return the x coordinate in cells */
-    public int x() { return x; }
+    /**
+     * @return the x coordinate in cells
+     */
+    public int x()
+    {
+        return x;
+    }
 
-    /** @return the y coordinate in cells */
-    public int y() { return y; }
+    /**
+     * @return the y coordinate in cells
+     */
+    public int y()
+    {
+        return y;
+    }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(Object o)
+    {
         if (this == o) return true;
         if (!(o instanceof Point)) return false;
         Point p = (Point) o;
@@ -32,12 +46,14 @@ public final class Point {
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         return 31 * x + y;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return "Point[" + x + ", " + y + "]";
     }
 }

@@ -4,20 +4,15 @@ import com.tonic.vellum.Canvas;
 import com.tonic.vellum.Section;
 
 /**
- * Base for leaf widgets that draw a single, vertically centered row. Handles the empty-bounds
- * guard and the centered row index; subclasses implement {@link #renderRow(Canvas, int)}.
+ * Base for leaf widgets that draw a single, vertically centered row; subclasses implement renderRow.
  */
-public abstract class SingleRowSection extends Section {
-
-    /**
-     * Renders the widget. Skips empty bounds and otherwise delegates to
-     * {@link #renderRow(Canvas, int)} with the vertically centered row index.
-     *
-     * @param canvas the canvas to draw into
-     */
+public abstract class SingleRowSection extends Section
+{
     @Override
-    protected final void render(Canvas canvas) {
-        if (canvas.width() <= 0 || canvas.height() <= 0) {
+    protected final void render(Canvas canvas)
+    {
+        if (canvas.width() <= 0 || canvas.height() <= 0)
+        {
             return;
         }
         renderRow(canvas, canvas.height() / 2);

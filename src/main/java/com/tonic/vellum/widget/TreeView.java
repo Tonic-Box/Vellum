@@ -9,17 +9,18 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * A scrollable, navigable tree. The visible (expanded) nodes are flattened to rows; arrows
- * move the cursor, ENTER/SPACE toggle a parent or select a leaf, and LEFT/RIGHT collapse and
- * expand the node under the cursor. Built on {@link AbstractListSection}.
+ * A scrollable tree view that flattens the expanded nodes to rows; activation toggles a
+ * parent or selects a leaf, and LEFT/RIGHT collapse and expand the node under the cursor.
  */
-public final class TreeView extends AbstractListSection {
-
-    private static final class Entry {
+public final class TreeView extends AbstractListSection
+{
+    private static final class Entry
+    {
         final TreeNode node;
         final int depth;
 
-        Entry(TreeNode node, int depth) {
+        Entry(TreeNode node, int depth)
+        {
             this.node = node;
             this.depth = depth;
         }
@@ -36,7 +37,8 @@ public final class TreeView extends AbstractListSection {
      *
      * @param root the root node of the tree
      */
-    public TreeView(TreeNode root) {
+    public TreeView(TreeNode root)
+    {
         this(root, true);
     }
 
@@ -46,7 +48,8 @@ public final class TreeView extends AbstractListSection {
      * @param root the root node of the tree
      * @param showRoot {@code true} to show the root row, {@code false} to show only its children
      */
-    public TreeView(TreeNode root, boolean showRoot) {
+    public TreeView(TreeNode root, boolean showRoot)
+    {
         this.root = root;
         this.showRoot = showRoot;
     }
@@ -54,10 +57,11 @@ public final class TreeView extends AbstractListSection {
     /**
      * Sets the handler invoked with a leaf node when it is activated.
      *
-     * @param handler consumer receiving the activated leaf node
+     * @param handler the selection handler
      * @return this TreeView for chaining
      */
-    public TreeView onSelectNode(Consumer<TreeNode> handler) {
+    public TreeView onSelectNode(Consumer<TreeNode> handler)
+    {
         this.onSelectNode = handler;
         return this;
     }
@@ -67,39 +71,36 @@ public final class TreeView extends AbstractListSection {
      *
      * @return this TreeView for chaining
      */
-    public TreeView refresh() {
+    public TreeView refresh()
+    {
         stale = true;
         requestRedraw();
         return this;
     }
 
     /**
-     * Returns the node under the cursor.
-     *
-     * @return the selected node, or {@code null} if there is no selection
+     * @return the node under the cursor, or null if there is no selection
      */
-    public TreeNode selectedNode() {
+    public TreeNode selectedNode()
+    {
         List<Entry> rows = entries();
         int i = selectedIndex();
         return i >= 0 && i < rows.size() ? rows.get(i).node : null;
     }
 
-    /**
-     * Returns the number of visible rows.
-     */
     @Override
-    protected int rowCount() {
+    protected int rowCount()
+    {
         return entries().size();
     }
 
-    /**
-     * Renders the tree row at the given index with indentation and an expand marker.
-     */
     @Override
-    protected void renderRow(Canvas row, int index, Style style) {
+    protected void renderRow(Canvas row, int index, Style style)
+    {
         Entry entry = entries().get(index);
         StringBuilder sb = new StringBuilder();
-        for (int d = 0; d < entry.depth; d++) {
+        for (int d = 0; d < entry.depth; d++)
+        {
             sb.append("  ");
         }
         sb.append(entry.node.isLeaf() ? "  " : entry.node.isExpanded() ? "v " : "> ");
@@ -107,28 +108,27 @@ public final class TreeView extends AbstractListSection {
         row.put(0, 0, sb.toString(), style);
     }
 
-    /**
-     * Selects the row's leaf node or toggles its parent node when activated.
-     */
     @Override
-    protected void onActivate(int index) {
+    protected void onActivate(int index)
+    {
         TreeNode node = entries().get(index).node;
-        if (node.isLeaf()) {
+        if (node.isLeaf())
+        {
             onSelectNode.accept(node);
-        } else {
+        }
+        else
+        {
             node.toggle();
             stale = true;
             requestRedraw();
         }
     }
 
-    /**
-     * Handles RIGHT and LEFT to expand and collapse; other keys defer to the base (arrows,
-     * ENTER/SPACE activation).
-     */
     @Override
-    protected KeyResult onKey(KeyEvent key) {
-        switch (key.code()) {
+    protected KeyResult onKey(KeyEvent key)
+    {
+        switch (key.code())
+        {
             case RIGHT:
                 setExpanded(true);
                 return KeyResult.CONSUMED;
@@ -140,22 +140,30 @@ public final class TreeView extends AbstractListSection {
         }
     }
 
-    private void setExpanded(boolean expand) {
+    private void setExpanded(boolean expand)
+    {
         TreeNode node = selectedNode();
-        if (node != null && !node.isLeaf() && node.isExpanded() != expand) {
+        if (node != null && !node.isLeaf() && node.isExpanded() != expand)
+        {
             node.expanded(expand);
             stale = true;
             requestRedraw();
         }
     }
 
-    private List<Entry> entries() {
-        if (stale) {
+    private List<Entry> entries()
+    {
+        if (stale)
+        {
             visible = new ArrayList<>();
-            if (showRoot) {
+            if (showRoot)
+            {
                 flatten(root, 0);
-            } else {
-                for (TreeNode child : root.children()) {
+            }
+            else
+            {
+                for (TreeNode child : root.children())
+                {
                     flatten(child, 0);
                 }
             }
@@ -164,10 +172,13 @@ public final class TreeView extends AbstractListSection {
         return visible;
     }
 
-    private void flatten(TreeNode node, int depth) {
+    private void flatten(TreeNode node, int depth)
+    {
         visible.add(new Entry(node, depth));
-        if (node.isExpanded()) {
-            for (TreeNode child : node.children()) {
+        if (node.isExpanded())
+        {
+            for (TreeNode child : node.children())
+            {
                 flatten(child, depth + 1);
             }
         }

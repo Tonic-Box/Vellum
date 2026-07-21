@@ -5,13 +5,10 @@ import com.tonic.vellum.Section;
 import java.util.List;
 
 /**
- * Optional capability for a {@link Section} that manages internal focus stops, such as a
- * form with several fields or a tab host whose bar and content are separate stops. The
- * focus manager consults this before advancing at the parent level, enabling nested Tab
- * traversal without forcing every Section to participate.
+ * Capability for a Section that manages internal focus stops; the focus manager consults it before advancing at the parent level.
  */
-public interface FocusContainer {
-
+public interface FocusContainer
+{
     /**
      * Returns the focusable descendants this container manages internally.
      *

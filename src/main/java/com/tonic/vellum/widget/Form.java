@@ -14,12 +14,11 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * A stack of fields with internal Tab traversal. Built on {@link Split} for layout and
- * implements {@link FocusContainer} so Tab and Shift-Tab cycle the fields, descending
- * depth-first into nested forms. ESC fires the cancel handler.
+ * A stack of fields with internal Tab traversal: Tab and Shift-Tab cycle the fields,
+ * descending depth-first into nested forms. ESC fires the cancel handler.
  */
-public final class Form extends Split implements FocusContainer {
-
+public final class Form extends Split implements FocusContainer
+{
     private final List<Section> fields = new ArrayList<>();
     private int active;
     private Runnable onCancel;
@@ -27,20 +26,21 @@ public final class Form extends Split implements FocusContainer {
     /**
      * Creates a vertical form whose fields are stacked top to bottom.
      */
-    public Form() {
+    public Form()
+    {
         super(Axis.VERTICAL);
     }
 
-    private Form(Axis axis) {
+    private Form(Axis axis)
+    {
         super(axis);
     }
 
     /**
-     * Creates a horizontal form whose fields are laid out left to right.
-     *
-     * @return a new horizontal form
+     * @return a new horizontal form, fields laid out left to right
      */
-    public static Form row() {
+    public static Form row()
+    {
         return new Form(Axis.HORIZONTAL);
     }
 
@@ -50,7 +50,8 @@ public final class Form extends Split implements FocusContainer {
      * @param field the field to add
      * @return this Form for chaining
      */
-    public Form addField(Section field) {
+    public Form addField(Section field)
+    {
         return addField(field, Constraint.fixed(1));
     }
 
@@ -61,7 +62,8 @@ public final class Form extends Split implements FocusContainer {
      * @param size the number of cells to span
      * @return this Form for chaining
      */
-    public Form addField(Section field, int size) {
+    public Form addField(Section field, int size)
+    {
         return addField(field, Constraint.fixed(size));
     }
 
@@ -72,7 +74,8 @@ public final class Form extends Split implements FocusContainer {
      * @param size the constraint sizing the field along the form's axis
      * @return this Form for chaining
      */
-    public Form addField(Section field, Constraint size) {
+    public Form addField(Section field, Constraint size)
+    {
         add(size, field);
         fields.add(field);
         return this;
@@ -85,7 +88,8 @@ public final class Form extends Split implements FocusContainer {
      * @param size the number of cells to span
      * @return this Form for chaining
      */
-    public Form addStatic(Section decoration, int size) {
+    public Form addStatic(Section decoration, int size)
+    {
         add(Constraint.fixed(size), decoration);
         return this;
     }
@@ -96,70 +100,65 @@ public final class Form extends Split implements FocusContainer {
      * @param handler the cancel handler
      * @return this Form for chaining
      */
-    public Form onCancel(Runnable handler) {
+    public Form onCancel(Runnable handler)
+    {
         this.onCancel = handler;
         return this;
     }
 
     @Override
-    protected KeyResult onKey(KeyEvent key) {
-        if (key.is(Key.ESCAPE) && onCancel != null) {
+    protected KeyResult onKey(KeyEvent key)
+    {
+        if (key.is(Key.ESCAPE) && onCancel != null)
+        {
             onCancel.run();
             return KeyResult.CONSUMED;
         }
         return KeyResult.UNHANDLED;
     }
 
-    /**
-     * Returns the form's focusable fields in traversal order.
-     *
-     * @return an unmodifiable list of the fields
-     */
     @Override
-    public List<Section> focusTargets() {
+    public List<Section> focusTargets()
+    {
         return Collections.unmodifiableList(fields);
     }
 
-    /**
-     * Returns the field that currently holds focus within the form.
-     *
-     * @return the active field, or {@code null} if the form has no fields
-     */
     @Override
-    public Section activeFocusTarget() {
+    public Section activeFocusTarget()
+    {
         return fields.isEmpty() ? null : fields.get(active);
     }
 
-    /**
-     * Moves focus to the next or previous field, descending into nested forms.
-     *
-     * @param forward {@code true} to advance forward, {@code false} to move backward
-     * @return {@code true} if focus moved within this form, {@code false} otherwise
-     */
     @Override
-    public boolean advanceFocus(boolean forward) {
-        if (fields.isEmpty()) {
+    public boolean advanceFocus(boolean forward)
+    {
+        if (fields.isEmpty())
+        {
             return false;
         }
         Section field = fields.get(active);
-        if (field instanceof FocusContainer && ((FocusContainer) field).advanceFocus(forward)) {
+        if (field instanceof FocusContainer && ((FocusContainer) field).advanceFocus(forward))
+        {
             return true;
         }
-        if (fields.size() <= 1) {
-            return false; // nothing of our own to move to; let the parent ring decide
+        if (fields.size() <= 1)
+        {
+            return false;
         }
         int n = fields.size();
-        active = (((active + (forward ? 1 : -1)) % n) + n) % n; // cycle within the form
-        if (fields.get(active) instanceof Form) {
+        active = (((active + (forward ? 1 : -1)) % n) + n) % n;
+        if (fields.get(active) instanceof Form)
+        {
             ((Form) fields.get(active)).enter(forward);
         }
         return true;
     }
 
-    /** Reset to the leading (forward) or trailing edge when focus enters this form. */
-    void enter(boolean forward) {
+    void enter(boolean forward)
+    {
         active = fields.isEmpty() ? 0 : (forward ? 0 : fields.size() - 1);
-        if (!fields.isEmpty() && fields.get(active) instanceof Form) {
+        if (!fields.isEmpty() && fields.get(active) instanceof Form)
+        {
             ((Form) fields.get(active)).enter(forward);
         }
     }

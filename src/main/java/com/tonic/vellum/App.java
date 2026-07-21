@@ -24,12 +24,12 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
- * Owns the terminal, the single UI thread and event loop, layout, repaint, focus, and
- * resize. Background threads interact with the UI only through {@link #post(Runnable)},
- * which marshals work onto the UI thread.
+ * The application engine: owns the terminal, the single UI thread and event loop, layout,
+ * repaint, focus, and resize. Background threads interact with the UI only through
+ * {@code post(Runnable)}.
  */
-public final class App {
-
+public final class App
+{
     private static final long POLL_MILLIS = 16;
 
     private static volatile App current;
@@ -54,7 +54,8 @@ public final class App {
     private volatile boolean resizePending;
     private boolean needsRepaint;
 
-    private App(Builder b) {
+    private App(Builder b)
+    {
         this.stage = new Stage(b.root);
         this.initialFocus = b.initialFocus;
         this.quitPredicate = b.quitPredicate;
@@ -64,38 +65,38 @@ public final class App {
     }
 
     /**
-     * Create a new builder for an {@link App}.
-     *
-     * @return a new builder
+     * @return a new app builder
      */
-    public static Builder builder() {
+    public static Builder builder()
+    {
         return new Builder();
     }
 
     /**
-     * Return the running instance, or {@code null} when no app is running.
-     *
-     * @return the running app, or {@code null}
+     * @return the running app, or null when no app is running
      */
-    public static App current() {
+    public static App current()
+    {
         return current;
     }
 
     /**
-     * Install the terminal, run the event loop until {@link #quit()}, and restore the
-     * terminal on exit, even if an exception propagates.
+     * Installs the terminal, runs the event loop until quit, and restores the terminal on
+     * exit, even if an exception propagates.
      */
-    public void run() {
+    public void run()
+    {
         uiThread = Thread.currentThread();
         current = this;
-        if (terminal == null) {
+        if (terminal == null)
+        {
             terminal = Terminals.system();
         }
         running = true;
-        // Restore the terminal even if the process is killed (the finally below does not run on SIGTERM).
         Thread restoreHook = new Thread(terminal::restore, "vellum-restore");
         Runtime.getRuntime().addShutdownHook(restoreHook);
-        try {
+        try
+        {
             terminal.setResizeListener(() -> resizePending = true);
             terminal.enterRawMode();
             terminal.enterAlternateScreen();
@@ -107,11 +108,16 @@ public final class App {
             repaint(true);
 
             loop();
-        } finally {
+        }
+        finally
+        {
             shutdownScheduler();
-            try {
+            try
+            {
                 stage.unmountAsRoot();
-            } catch (Throwable t) {
+            }
+            catch (Throwable t)
+            {
                 handleError(t);
             }
             terminal.showCursor();
@@ -119,64 +125,77 @@ public final class App {
             terminal.restore();
             removeShutdownHook(restoreHook);
             current = null;
-            if (errorHandler == null && firstUnhandledError != null) {
+            if (errorHandler == null && firstUnhandledError != null)
+            {
                 firstUnhandledError.printStackTrace();
             }
         }
     }
 
-    private static void removeShutdownHook(Thread hook) {
-        try {
+    private static void removeShutdownHook(Thread hook)
+    {
+        try
+        {
             Runtime.getRuntime().removeShutdownHook(hook);
-        } catch (IllegalStateException shuttingDown) {
-            // the JVM is already shutting down; the hook will run and is idempotent
+        }
+        catch (IllegalStateException ignored)
+        {
         }
     }
 
-    private void loop() {
-        while (running) {
+    private void loop()
+    {
+        while (running)
+        {
             drainTasks();
             KeyEvent key = terminal.readKey(POLL_MILLIS);
-            while (key != null && running) {
+            while (key != null && running)
+            {
                 handleKey(key);
-                key = terminal.readKey(0); // drain any buffered burst input this frame
+                key = terminal.readKey(0);
             }
-            if (resizePending) {
+            if (resizePending)
+            {
                 resizePending = false;
                 applyResize();
             }
-            if (needsRepaint) {
+            if (needsRepaint)
+            {
                 needsRepaint = false;
                 repaint(false);
             }
         }
     }
 
-    /** Stop the loop and let {@link #run()} restore the terminal. */
-    public void quit() {
+    /**
+     * Stops the event loop; {@code run()} then restores the terminal.
+     */
+    public void quit()
+    {
         running = false;
     }
 
     /**
-     * Marshal a runnable onto the UI thread. Safe to call from any thread.
+     * Marshals a runnable onto the UI thread. Safe to call from any thread.
      *
      * @param task the runnable to run on the UI thread
      */
-    public void post(Runnable task) {
+    public void post(Runnable task)
+    {
         tasks.add(task);
     }
 
     /**
-     * Open a modal overlay: render {@code content} on top of the UI at {@code placement}
-     * and route keys to it (Tab cycles {@code focusTargets}, or the content itself if none
-     * are given). UI-thread-only. Close overlays in reverse order of opening.
+     * Opens a modal overlay rendered on top of the UI and routes keys to it. UI-thread-only.
+     * Close overlays in reverse order of opening.
      *
      * @param content the overlay content section
-     * @param placement the placement that resolves the overlay's bounds
-     * @param focusTargets the sections Tab cycles, or none to focus the content itself
-     * @return a handle to close the overlay
+     * @param placement resolves the overlay's bounds against the screen
+     * @param focusTargets the sections Tab cycles between, or none to focus the content itself
+     * @return a handle that closes the overlay
      */
-    public OverlayHandle openOverlay(Section content, Placement placement, Section... focusTargets) {
+    public OverlayHandle openOverlay(Section content, Placement placement, Section... focusTargets)
+    {
         stage.addOverlay(content, placement);
         List<Section> order = focusTargets.length > 0
                 ? Arrays.asList(focusTargets)
@@ -186,209 +205,253 @@ public final class App {
     }
 
     /**
-     * Schedule a one-shot task on the UI thread after {@code delay}.
+     * Schedules a one-shot task on the UI thread.
      *
      * @param delay the delay before the task runs
      * @param task the task to run on the UI thread
      * @return a handle to cancel the scheduled task
      */
-    public Cancellable schedule(Duration delay, Runnable task) {
-        ScheduledFuture<?> future = scheduler().schedule(
-                () -> post(task), delay.toMillis(), TimeUnit.MILLISECONDS);
+    public Cancellable schedule(Duration delay, Runnable task)
+    {
+        ScheduledFuture<?> future = scheduler().schedule(() -> post(task), delay.toMillis(), TimeUnit.MILLISECONDS);
         return new FutureCancellable(future);
     }
 
     /**
-     * Schedule a repeating task on the UI thread.
+     * Schedules a repeating task on the UI thread.
      *
      * @param initialDelay the delay before the first run
      * @param period the period between successive runs
      * @param task the task to run on the UI thread
      * @return a handle to cancel the scheduled task
      */
-    public Cancellable scheduleAtFixedRate(Duration initialDelay, Duration period, Runnable task) {
-        ScheduledFuture<?> future = scheduler().scheduleAtFixedRate(
-                () -> post(task), initialDelay.toMillis(), period.toMillis(), TimeUnit.MILLISECONDS);
+    public Cancellable scheduleAtFixedRate(Duration initialDelay, Duration period, Runnable task)
+    {
+        ScheduledFuture<?> future = scheduler().scheduleAtFixedRate(() -> post(task), initialDelay.toMillis(), period.toMillis(), TimeUnit.MILLISECONDS);
         return new FutureCancellable(future);
     }
 
-    // ---- loop internals ----
-
-    private void drainTasks() {
+    private void drainTasks()
+    {
         Runnable task;
-        while ((task = tasks.poll()) != null) {
-            try {
+        while ((task = tasks.poll()) != null)
+        {
+            try
+            {
                 task.run();
-            } catch (Throwable t) {
+            }
+            catch (Throwable t)
+            {
                 handleError(t);
             }
         }
     }
 
-    private void handleKey(KeyEvent key) {
-        if (quitPredicate != null && quitPredicate.test(key)) {
+    private void handleKey(KeyEvent key)
+    {
+        if (quitPredicate != null && quitPredicate.test(key))
+        {
             quit();
             return;
         }
-        try {
+        try
+        {
             focus.dispatchKey(key);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             handleError(t);
         }
     }
 
-    /**
-     * Route an exception thrown by user code (a task, key handler, or render) to the
-     * configured handler, or remember the first one to print after the terminal is
-     * restored. The loop keeps running so one broken section cannot take down the UI.
-     */
-    private void handleError(Throwable t) {
-        if (errorHandler != null) {
-            try {
+    private void handleError(Throwable t)
+    {
+        if (errorHandler != null)
+        {
+            try
+            {
                 errorHandler.accept(t);
-            } catch (Throwable ignored) {
-                // a throwing error handler must not crash the loop
             }
-        } else if (firstUnhandledError == null) {
+            catch (Throwable ignored)
+            {
+            }
+        }
+        else if (firstUnhandledError == null)
+        {
             firstUnhandledError = t;
         }
     }
 
-    private void applyResize() {
+    private void applyResize()
+    {
         applyLayout();
         repaint(true);
     }
 
-    /** (Re)allocate buffers and lay the tree out to the current terminal size. */
-    private void applyLayout() {
+    private void applyLayout()
+    {
         TerminalSize size = terminal.size();
         allocate(size);
         stage.resizeRoot(new Rect(0, 0, size.columns(), size.rows()));
     }
 
-    private void allocate(TerminalSize size) {
+    private void allocate(TerminalSize size)
+    {
         back = new Buffer(size.columns(), size.rows());
-        if (renderer == null) {
+        if (renderer == null)
+        {
             renderer = new Renderer(size.columns(), size.rows());
-        } else {
+        }
+        else
+        {
             renderer.resize(size.columns(), size.rows());
         }
     }
 
-    private void repaint(boolean full) {
+    private void repaint(boolean full)
+    {
         renderTree(stage, full);
         String out = renderer.flush(back);
-        if (!out.isEmpty()) {
+        if (!out.isEmpty())
+        {
             terminal.write(out);
         }
         updateCursor();
         terminal.flush();
     }
 
-    /** Position the hardware cursor from the focused section's cursor hint, or hide it. */
-    private void updateCursor() {
+    private void updateCursor()
+    {
         Section focused = focus.focusedSection();
         Point local = focused != null ? safeCursor(focused) : null;
-        if (local != null) {
+        if (local != null)
+        {
             Rect b = focused.bounds();
             int cx = b.x() + local.x();
             int cy = b.y() + local.y();
-            if (b.contains(cx, cy)) {
+            if (b.contains(cx, cy))
+            {
                 terminal.moveCursor(cx, cy);
-                if (!cursorShown) {
+                if (!cursorShown)
+                {
                     terminal.showCursor();
                     cursorShown = true;
                 }
                 return;
             }
         }
-        if (cursorShown) {
+        if (cursorShown)
+        {
             terminal.hideCursor();
             cursorShown = false;
         }
     }
 
-    private Point safeCursor(Section focused) {
-        try {
+    private Point safeCursor(Section focused)
+    {
+        try
+        {
             return focused.cursor();
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             handleError(t);
             return null;
         }
     }
 
-    private void renderTree(Section section, boolean full) {
-        if (full || section.isDirty()) {
-            try {
+    private void renderTree(Section section, boolean full)
+    {
+        if (full || section.isDirty())
+        {
+            try
+            {
                 section.renderInto(back);
-            } catch (Throwable t) {
+            }
+            catch (Throwable t)
+            {
                 handleError(t);
             }
         }
-        for (Section child : section.children()) {
+        for (Section child : section.children())
+        {
             renderTree(child, full);
         }
     }
 
-    private ScheduledExecutorService scheduler() {
-        if (scheduler == null) {
+    private ScheduledExecutorService scheduler()
+    {
+        if (scheduler == null)
+        {
             scheduler = Executors.newSingleThreadScheduledExecutor(daemonFactory());
         }
         return scheduler;
     }
 
-    private void shutdownScheduler() {
-        if (scheduler != null) {
+    private void shutdownScheduler()
+    {
+        if (scheduler != null)
+        {
             scheduler.shutdownNow();
             scheduler = null;
         }
     }
 
-    private static ThreadFactory daemonFactory() {
-        return r -> {
+    private static ThreadFactory daemonFactory()
+    {
+        return r ->
+        {
             Thread t = new Thread(r, "vellum-scheduler");
             t.setDaemon(true);
             return t;
         };
     }
 
-    /** The engine seam handed to sections and the focus manager; not part of the public API. */
-    private final class EngineHost implements Host {
+    private final class EngineHost implements Host
+    {
         @Override
-        public void requestRepaint() {
+        public void requestRepaint()
+        {
             needsRepaint = true;
         }
 
         @Override
-        public void assertUiThread() {
-            if (Thread.currentThread() != uiThread) {
-                throw new IllegalStateException(
-                        "Section UI methods must run on the UI thread; use App.post(...) from other threads");
+        public void assertUiThread()
+        {
+            if (Thread.currentThread() != uiThread)
+            {
+                throw new IllegalStateException("Section UI methods must run on the UI thread; use App.post(...) from other threads");
             }
         }
 
         @Override
-        public boolean isOnFocusPath(Section section) {
+        public boolean isOnFocusPath(Section section)
+        {
             return focus.isOnFocusPath(section);
         }
 
         @Override
-        public void refreshFocus() {
+        public void refreshFocus()
+        {
             focus.refresh();
         }
     }
 
-    private final class OverlayHandleImpl implements OverlayHandle {
+    private final class OverlayHandleImpl implements OverlayHandle
+    {
         private final Section content;
         private boolean open = true;
 
-        OverlayHandleImpl(Section content) {
+        OverlayHandleImpl(Section content)
+        {
             this.content = content;
         }
 
         @Override
-        public void close() {
-            if (!open) {
+        public void close()
+        {
+            if (!open)
+            {
                 return;
             }
             open = false;
@@ -397,31 +460,39 @@ public final class App {
         }
 
         @Override
-        public boolean isOpen() {
+        public boolean isOpen()
+        {
             return open;
         }
     }
 
-    private static final class FutureCancellable implements Cancellable {
+    private static final class FutureCancellable implements Cancellable
+    {
         private final ScheduledFuture<?> future;
 
-        FutureCancellable(ScheduledFuture<?> future) {
+        FutureCancellable(ScheduledFuture<?> future)
+        {
             this.future = future;
         }
 
         @Override
-        public void cancel() {
+        public void cancel()
+        {
             future.cancel(false);
         }
 
         @Override
-        public boolean isCancelled() {
+        public boolean isCancelled()
+        {
             return future.isCancelled();
         }
     }
 
-    /** Fluent builder for an {@link App}. */
-    public static final class Builder {
+    /**
+     * Fluent builder for an App.
+     */
+    public static final class Builder
+    {
         private Section root;
         private final List<Section> focusOrder = new ArrayList<>();
         private Navigation navigation;
@@ -431,108 +502,118 @@ public final class App {
         private Terminal terminal;
 
         /**
-         * Set the root section of the UI.
+         * Sets the root section of the UI.
          *
          * @param root the root section
          * @return this Builder for chaining
          */
-        public Builder root(Section root) {
+        public Builder root(Section root)
+        {
             this.root = root;
             return this;
         }
 
         /**
-         * Set the sections that participate in focus navigation, in order.
+         * Sets the sections that participate in focus navigation, in order.
          *
          * @param targets the focusable sections in navigation order
          * @return this Builder for chaining
          */
-        public Builder focusOrder(Section... targets) {
+        public Builder focusOrder(Section... targets)
+        {
             this.focusOrder.clear();
             this.focusOrder.addAll(Arrays.asList(targets));
             return this;
         }
 
         /**
-         * Set the navigation strategy that moves focus between targets.
+         * Sets the navigation strategy that moves focus between targets.
          *
          * @param navigation the navigation strategy
          * @return this Builder for chaining
          */
-        public Builder navigation(Navigation navigation) {
+        public Builder navigation(Navigation navigation)
+        {
             this.navigation = navigation;
             return this;
         }
 
         /**
-         * Set the section that holds focus when the app starts.
+         * Sets the section that holds focus when the app starts.
          *
          * @param target the initially focused section
          * @return this Builder for chaining
          */
-        public Builder initialFocus(Section target) {
+        public Builder initialFocus(Section target)
+        {
             this.initialFocus = target;
             return this;
         }
 
         /**
-         * Quit when a key matches the predicate.
+         * Quits when a key matches the predicate.
          *
          * @param predicate tested against each key event
          * @return this Builder for chaining
          */
-        public Builder onQuit(Predicate<KeyEvent> predicate) {
+        public Builder onQuit(Predicate<KeyEvent> predicate)
+        {
             this.quitPredicate = predicate;
             return this;
         }
 
         /**
-         * Quit on a specific logical key.
+         * Quits on a specific logical key.
          *
          * @param key the logical key that triggers quit
          * @return this Builder for chaining
          */
-        public Builder onQuitKey(Key key) {
+        public Builder onQuitKey(Key key)
+        {
             return onQuit(e -> e.is(key));
         }
 
         /**
-         * Quit on a specific printable character.
+         * Quits on a specific printable character.
          *
          * @param ch the character that triggers quit
          * @return this Builder for chaining
          */
-        public Builder onQuitKey(char ch) {
+        public Builder onQuitKey(char ch)
+        {
             return onQuit(e -> e.is(Key.CHAR) && e.ch() == ch);
         }
 
         /**
-         * Handle exceptions thrown by a task, key handler, or section render, on the UI
-         * thread. Without one, the loop keeps running and the first error is printed after
-         * the terminal is restored.
+         * Sets a handler for exceptions thrown by a task, key handler, or section render,
+         * invoked on the UI thread. Without one, the loop keeps running and the first error
+         * is printed after the terminal is restored.
          *
-         * @param handler the error handler invoked on the UI thread
+         * @param handler the error handler
          * @return this Builder for chaining
          */
-        public Builder onError(Consumer<Throwable> handler) {
+        public Builder onError(Consumer<Throwable> handler)
+        {
             this.errorHandler = handler;
             return this;
         }
 
-        /** Inject a terminal driver (used by tests). Package-private. */
-        Builder useTerminal(Terminal terminal) {
+        Builder useTerminal(Terminal terminal)
+        {
             this.terminal = terminal;
             return this;
         }
 
         /**
-         * Build the configured {@link App}.
+         * Builds the configured app.
          *
          * @return the new app
          * @throws IllegalStateException if no root section is set
          */
-        public App build() {
-            if (root == null) {
+        public App build()
+        {
+            if (root == null)
+            {
                 throw new IllegalStateException("App requires a root section");
             }
             return new App(this);

@@ -7,11 +7,10 @@ import com.tonic.vellum.input.KeyEvent;
 import com.tonic.vellum.style.Style;
 
 /**
- * A focusable, activatable button. ENTER or SPACE runs its action, and it is drawn reversed
- * while focused.
+ * A focusable button that runs its action on ENTER or SPACE and is drawn reversed while focused.
  */
-public final class Button extends SingleRowSection {
-
+public final class Button extends SingleRowSection
+{
     private String label;
     private Runnable onActivate = () -> { };
     private Style style = Style.NORMAL;
@@ -22,7 +21,8 @@ public final class Button extends SingleRowSection {
      *
      * @param label the label text; treated as empty if {@code null}
      */
-    public Button(String label) {
+    public Button(String label)
+    {
         this.label = label == null ? "" : label;
     }
 
@@ -32,7 +32,8 @@ public final class Button extends SingleRowSection {
      * @param label the label text; treated as empty if {@code null}
      * @return this Button for chaining
      */
-    public Button setLabel(String label) {
+    public Button setLabel(String label)
+    {
         this.label = label == null ? "" : label;
         requestRedraw();
         return this;
@@ -44,7 +45,8 @@ public final class Button extends SingleRowSection {
      * @param handler the activation handler
      * @return this Button for chaining
      */
-    public Button onActivate(Runnable handler) {
+    public Button onActivate(Runnable handler)
+    {
         this.onActivate = handler;
         return this;
     }
@@ -55,7 +57,8 @@ public final class Button extends SingleRowSection {
      * @param style the unfocused style
      * @return this Button for chaining
      */
-    public Button style(Style style) {
+    public Button style(Style style)
+    {
         this.style = style;
         requestRedraw();
         return this;
@@ -67,28 +70,26 @@ public final class Button extends SingleRowSection {
      * @param style the focused style
      * @return this Button for chaining
      */
-    public Button focusedStyle(Style style) {
+    public Button focusedStyle(Style style)
+    {
         this.focusedStyle = style;
         requestRedraw();
         return this;
     }
 
-    /**
-     * Renders the button row.
-     */
     @Override
-    protected void renderRow(Canvas canvas, int y) {
+    protected void renderRow(Canvas canvas, int y)
+    {
         Style s = isFocused() ? focusedStyle : style;
         canvas.fill(new Rect(0, y, canvas.width(), 1), ' ', s);
         Text.putAligned(canvas, y, "[ " + label + " ]", Alignment.CENTER, s);
     }
 
-    /**
-     * Activates the button on ENTER or SPACE.
-     */
     @Override
-    protected KeyResult onKey(KeyEvent key) {
-        if (Keys.isActivation(key)) {
+    protected KeyResult onKey(KeyEvent key)
+    {
+        if (Keys.isActivation(key))
+        {
             onActivate.run();
             return KeyResult.CONSUMED;
         }

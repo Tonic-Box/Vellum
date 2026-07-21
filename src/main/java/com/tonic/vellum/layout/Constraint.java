@@ -1,18 +1,23 @@
 package com.tonic.vellum.layout;
 
 /**
- * An immutable sizing rule for one child of a {@link Split}. Created via the static
- * factory methods.
+ * An immutable sizing rule for one child of a Split, created via the static factory methods.
  */
-public final class Constraint {
-
-    /** The category of a constraint. */
-    public enum Kind { FIXED, PERCENT, FILL, MIN, MAX }
+public final class Constraint
+{
+    /**
+     * The category of a constraint.
+     */
+    public enum Kind
+    {
+        FIXED, PERCENT, FILL, MIN, MAX
+    }
 
     private final Kind kind;
     private final int value;
 
-    private Constraint(Kind kind, int value) {
+    private Constraint(Kind kind, int value)
+    {
         this.kind = kind;
         this.value = value;
     }
@@ -23,7 +28,8 @@ public final class Constraint {
      * @param cells the size in cells, clamped to non-negative
      * @return the constraint
      */
-    public static Constraint fixed(int cells) {
+    public static Constraint fixed(int cells)
+    {
         return new Constraint(Kind.FIXED, Math.max(0, cells));
     }
 
@@ -33,16 +39,16 @@ public final class Constraint {
      * @param pct the percentage, clamped to non-negative
      * @return the constraint
      */
-    public static Constraint percent(int pct) {
+    public static Constraint percent(int pct)
+    {
         return new Constraint(Kind.PERCENT, Math.max(0, pct));
     }
 
     /**
-     * Creates a constraint taking an equal share of the remaining space.
-     *
-     * @return the constraint
+     * @return a constraint taking an equal share of the remaining space
      */
-    public static Constraint fill() {
+    public static Constraint fill()
+    {
         return fill(1);
     }
 
@@ -52,7 +58,8 @@ public final class Constraint {
      * @param weight the relative weight, clamped to at least 1
      * @return the constraint
      */
-    public static Constraint fill(int weight) {
+    public static Constraint fill(int weight)
+    {
         return new Constraint(Kind.FILL, Math.max(1, weight));
     }
 
@@ -62,29 +69,41 @@ public final class Constraint {
      * @param cells the minimum size in cells, clamped to non-negative
      * @return the constraint
      */
-    public static Constraint min(int cells) {
+    public static Constraint min(int cells)
+    {
         return new Constraint(Kind.MIN, Math.max(0, cells));
     }
 
     /**
-     * Creates a constraint of at most {@code cells}, growing into remaining space up to
-     * that cap.
+     * Creates a constraint of at most {@code cells}, growing into remaining space up to that cap.
      *
      * @param cells the maximum size in cells, clamped to non-negative
      * @return the constraint
      */
-    public static Constraint max(int cells) {
+    public static Constraint max(int cells)
+    {
         return new Constraint(Kind.MAX, Math.max(0, cells));
     }
 
-    /** @return the constraint kind */
-    public Kind kind() { return kind; }
+    /**
+     * @return the constraint kind
+     */
+    public Kind kind()
+    {
+        return kind;
+    }
 
-    /** @return the constraint value in cells, percent, or weight depending on the kind */
-    public int value() { return value; }
+    /**
+     * @return the constraint value in cells, percent, or weight depending on the kind
+     */
+    public int value()
+    {
+        return value;
+    }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(Object o)
+    {
         if (this == o) return true;
         if (!(o instanceof Constraint)) return false;
         Constraint other = (Constraint) o;
@@ -92,12 +111,14 @@ public final class Constraint {
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         return 31 * kind.hashCode() + value;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return "Constraint[" + kind + " " + value + "]";
     }
 }

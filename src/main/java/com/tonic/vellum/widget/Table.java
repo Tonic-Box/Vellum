@@ -11,18 +11,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A scrollable table with a fixed header and selectable rows. Column widths are computed
- * with the layout {@link LayoutSolver} from each column's {@link Constraint}, so the header
- * and rows always align and tile the width. Built on {@link AbstractListSection}.
+ * A scrollable table with a fixed header and selectable rows; column widths are solved from
+ * each column's Constraint, so the header and rows always align and tile the width.
  */
-public final class Table extends AbstractListSection {
-
-    private static final class Column {
+public final class Table extends AbstractListSection
+{
+    private static final class Column
+    {
         final String title;
         final Constraint width;
         final Alignment align;
 
-        Column(String title, Constraint width, Alignment align) {
+        Column(String title, Constraint width, Alignment align)
+        {
             this.title = title;
             this.width = width;
             this.align = align;
@@ -45,7 +46,8 @@ public final class Table extends AbstractListSection {
      * @param width the column width constraint
      * @return this Table for chaining
      */
-    public Table column(String title, Constraint width) {
+    public Table column(String title, Constraint width)
+    {
         return column(title, width, Alignment.LEFT);
     }
 
@@ -57,7 +59,8 @@ public final class Table extends AbstractListSection {
      * @param align the cell and header alignment
      * @return this Table for chaining
      */
-    public Table column(String title, Constraint width, Alignment align) {
+    public Table column(String title, Constraint width, Alignment align)
+    {
         columns.add(new Column(title, width, align));
         columnsDirty = true;
         return this;
@@ -69,7 +72,8 @@ public final class Table extends AbstractListSection {
      * @param cells the cell values in column order
      * @return this Table for chaining
      */
-    public Table addRow(String... cells) {
+    public Table addRow(String... cells)
+    {
         rows.add(cells);
         requestRedraw();
         return this;
@@ -81,7 +85,8 @@ public final class Table extends AbstractListSection {
      * @param newRows the new rows, each an array of cell values
      * @return this Table for chaining
      */
-    public Table setRows(List<String[]> newRows) {
+    public Table setRows(List<String[]> newRows)
+    {
         rows.clear();
         rows.addAll(newRows);
         requestRedraw();
@@ -94,7 +99,8 @@ public final class Table extends AbstractListSection {
      * @param show {@code true} to show the header
      * @return this Table for chaining
      */
-    public Table showHeader(boolean show) {
+    public Table showHeader(boolean show)
+    {
         this.showHeader = show;
         requestRedraw();
         return this;
@@ -106,78 +112,63 @@ public final class Table extends AbstractListSection {
      * @param style the header style
      * @return this Table for chaining
      */
-    public Table headerStyle(Style style) {
+    public Table headerStyle(Style style)
+    {
         this.headerStyle = style;
         requestRedraw();
         return this;
     }
 
     /**
-     * Returns the selected row's cells, or {@code null} when empty.
-     *
-     * @return the selected row's cell values, or {@code null}
+     * @return the selected row's cells, or null when the table is empty
      */
-    public String[] selectedRow() {
+    public String[] selectedRow()
+    {
         int i = selectedIndex();
         return i >= 0 && i < rows.size() ? rows.get(i) : null;
     }
 
-    /**
-     * Returns the number of rows.
-     *
-     * @return the row count
-     */
     @Override
-    protected int rowCount() {
+    protected int rowCount()
+    {
         return rows.size();
     }
 
-    /**
-     * Returns the number of header rows (one when the header is shown and columns exist,
-     * otherwise zero).
-     *
-     * @return the header row count
-     */
     @Override
-    protected int headerRows() {
+    protected int headerRows()
+    {
         return showHeader && !columns.isEmpty() ? 1 : 0;
     }
 
-    /**
-     * Draws the column titles into the header area.
-     *
-     * @param header the canvas covering the reserved header area
-     */
     @Override
-    protected void renderHeader(Canvas header) {
+    protected void renderHeader(Canvas header)
+    {
         Rect[] cells = columnRects(header.width());
-        for (int i = 0; i < columns.size(); i++) {
+        for (int i = 0; i < columns.size(); i++)
+        {
             Text.putAligned(header.clip(cells[i]), 0, columns.get(i).title, columns.get(i).align, headerStyle);
         }
     }
 
-    /**
-     * Draws the cells of the given row across the columns.
-     *
-     * @param row the single-row canvas to draw into
-     * @param index the row index
-     * @param style the style the row has been filled with
-     */
     @Override
-    protected void renderRow(Canvas row, int index, Style style) {
+    protected void renderRow(Canvas row, int index, Style style)
+    {
         String[] cells = rows.get(index);
         Rect[] rects = columnRects(row.width());
-        for (int i = 0; i < columns.size(); i++) {
+        for (int i = 0; i < columns.size(); i++)
+        {
             String text = i < cells.length && cells[i] != null ? cells[i] : "";
             Text.putAligned(row.clip(rects[i]), 0, text, columns.get(i).align, style);
         }
     }
 
-    /** Column rectangles for the given width, solved once per width (cached across rows). */
-    private Rect[] columnRects(int width) {
-        if (columnsDirty || width != cachedWidth) {
+    private Rect[] columnRects(int width)
+    {
+        if (columnsDirty || width != cachedWidth)
+        {
             List<Constraint> widths = new ArrayList<>(columns.size());
-            for (Column column : columns) {
+            for (Column column : columns)
+            {
                 widths.add(column.width);
             }
             cachedRects = LayoutSolver.solve(new Rect(0, 0, width, 1), widths, Axis.HORIZONTAL);

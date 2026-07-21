@@ -2,11 +2,13 @@ package com.tonic.vellum;
 
 import com.tonic.vellum.geom.Rect;
 
-/** Computes an overlay's bounds from the current screen bounds. */
-public interface Placement {
-
+/**
+ * Computes an overlay's bounds from the current screen bounds.
+ */
+public interface Placement
+{
     /**
-     * Resolve the overlay bounds for the given screen bounds.
+     * Resolves the overlay bounds for the given screen bounds.
      *
      * @param screen the current screen bounds
      * @return the overlay bounds
@@ -14,14 +16,16 @@ public interface Placement {
     Rect resolve(Rect screen);
 
     /**
-     * Create a placement centered on and clamped to the screen at the given size.
+     * Creates a placement centered on and clamped to the screen at the given size.
      *
      * @param width the desired width
      * @param height the desired height
      * @return a centered placement
      */
-    static Placement centered(int width, int height) {
-        return screen -> {
+    static Placement centered(int width, int height)
+    {
+        return screen ->
+        {
             int w = Math.min(width, screen.width());
             int h = Math.min(height, screen.height());
             int x = screen.x() + (screen.width() - w) / 2;
@@ -31,12 +35,13 @@ public interface Placement {
     }
 
     /**
-     * Create a placement at a fixed rectangle, independent of screen size.
+     * Creates a placement at a fixed rectangle, independent of screen size.
      *
      * @param rect the fixed overlay bounds
      * @return a fixed placement
      */
-    static Placement fixed(Rect rect) {
+    static Placement fixed(Rect rect)
+    {
         return screen -> rect;
     }
 }

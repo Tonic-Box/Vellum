@@ -10,17 +10,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Vertically scrollable lines of text with {@code UP}/{@code DOWN}/{@code PAGE_*}/
- * {@code HOME}/{@code END}. Optional follow-tail keeps the view pinned to the bottom as
- * lines are appended; scrolling up turns it off, {@code END} turns it back on.
+ * Vertically scrollable lines of text, scrolled with UP/DOWN/PAGE_UP/PAGE_DOWN/HOME/END.
+ * Optional follow-tail keeps the view pinned to the bottom as lines are appended.
  */
-public class ScrollSection extends Section {
-
+public class ScrollSection extends Section
+{
     private final List<String> lines = new ArrayList<>();
     private final Viewport viewport = new Viewport();
     private Style style = Style.NORMAL;
     private boolean followTail = false;
-    private int maxLines = 0; // 0 = unlimited
+    private int maxLines = 0;
 
     /**
      * Caps the retained lines, dropping the oldest beyond {@code max}; 0 means unlimited.
@@ -28,7 +27,8 @@ public class ScrollSection extends Section {
      * @param max the maximum retained lines, or 0 for unlimited
      * @return this ScrollSection for chaining
      */
-    public ScrollSection maxLines(int max) {
+    public ScrollSection maxLines(int max)
+    {
         this.maxLines = Math.max(0, max);
         trim();
         displayDirty = true;
@@ -48,9 +48,11 @@ public class ScrollSection extends Section {
      * @param follow {@code true} to follow the tail
      * @return this ScrollSection for chaining
      */
-    public ScrollSection followTail(boolean follow) {
+    public ScrollSection followTail(boolean follow)
+    {
         this.followTail = follow;
-        if (follow) {
+        if (follow)
+        {
             scrollToBottom();
             requestRedraw();
         }
@@ -63,7 +65,8 @@ public class ScrollSection extends Section {
      * @param wrap {@code true} to enable wrapping
      * @return this ScrollSection for chaining
      */
-    public ScrollSection wrap(boolean wrap) {
+    public ScrollSection wrap(boolean wrap)
+    {
         this.wrap = wrap;
         this.displayDirty = true;
         requestRedraw();
@@ -76,7 +79,8 @@ public class ScrollSection extends Section {
      * @param style the style
      * @return this ScrollSection for chaining
      */
-    public ScrollSection style(Style style) {
+    public ScrollSection style(Style style)
+    {
         this.style = style;
         requestRedraw();
         return this;
@@ -88,12 +92,14 @@ public class ScrollSection extends Section {
      * @param newLines the new lines
      * @return this ScrollSection for chaining
      */
-    public ScrollSection setLines(List<String> newLines) {
+    public ScrollSection setLines(List<String> newLines)
+    {
         lines.clear();
         lines.addAll(newLines);
         trim();
         displayDirty = true;
-        if (followTail) {
+        if (followTail)
+        {
             scrollToBottom();
         }
         requestRedraw();
@@ -105,64 +111,59 @@ public class ScrollSection extends Section {
      *
      * @param line the line to append
      */
-    protected void appendLine(String line) {
+    protected void appendLine(String line)
+    {
         lines.add(line);
         trim();
         displayDirty = true;
-        if (followTail) {
+        if (followTail)
+        {
             scrollToBottom();
         }
         requestRedraw();
     }
 
-    private void trim() {
-        if (maxLines > 0 && lines.size() > maxLines) {
+    private void trim()
+    {
+        if (maxLines > 0 && lines.size() > maxLines)
+        {
             lines.subList(0, lines.size() - maxLines).clear();
         }
     }
 
     /**
-     * Returns the number of logical lines.
-     *
-     * @return the line count
+     * @return the number of logical lines
      */
-    public int lineCount() {
+    public int lineCount()
+    {
         return lines.size();
     }
 
     /**
-     * Returns the index of the first visible line.
-     *
-     * @return the top scroll position
+     * @return the index of the first visible line
      */
-    public int scrollTop() {
+    public int scrollTop()
+    {
         return viewport.top();
     }
 
-    /**
-     * Draws the visible lines.
-     *
-     * @param canvas the canvas to draw into
-     */
     @Override
-    protected void render(Canvas canvas) {
+    protected void render(Canvas canvas)
+    {
         List<String> visible = visibleLines();
         viewport.set(viewport.top(), visible.size(), viewportHeight());
         int top = viewport.top();
-        for (int i = 0; i < canvas.height() && top + i < visible.size(); i++) {
+        for (int i = 0; i < canvas.height() && top + i < visible.size(); i++)
+        {
             canvas.put(0, i, visible.get(top + i), style);
         }
     }
 
-    /**
-     * Handles scrolling keys ({@code UP}/{@code DOWN}/{@code PAGE_*}/{@code HOME}/{@code END}).
-     *
-     * @param key the key event
-     * @return the key handling result
-     */
     @Override
-    protected KeyResult onKey(KeyEvent key) {
-        switch (key.code()) {
+    protected KeyResult onKey(KeyEvent key)
+    {
+        switch (key.code())
+        {
             case UP:        scrollBy(-1); followTail = false; return KeyResult.CONSUMED;
             case DOWN:      scrollBy(1); followTail = atBottom(); return KeyResult.CONSUMED;
             case PAGE_UP:   scrollBy(-viewportHeight()); followTail = false; return KeyResult.CONSUMED;
@@ -173,38 +174,45 @@ public class ScrollSection extends Section {
         }
     }
 
-    /** True when the view is scrolled to the last line. */
-    private boolean atBottom() {
+    private boolean atBottom()
+    {
         return viewport.top() == Viewport.maxTop(visibleLines().size(), viewportHeight());
     }
 
-    private void scrollToBottom() {
+    private void scrollToBottom()
+    {
         viewport.toBottom(visibleLines().size(), viewportHeight());
     }
 
-    private void scrollBy(int delta) {
+    private void scrollBy(int delta)
+    {
         setTop(viewport.top() + delta);
     }
 
-    private void setTop(int newTop) {
+    private void setTop(int newTop)
+    {
         int before = viewport.top();
         viewport.set(newTop, visibleLines().size(), viewportHeight());
-        if (viewport.top() != before) {
+        if (viewport.top() != before)
+        {
             requestRedraw();
         }
     }
 
-    private int viewportHeight() {
+    private int viewportHeight()
+    {
         return Math.max(1, bounds().height());
     }
 
-    /** The lines to scroll over: wrapped display lines when wrapping, otherwise the logical lines. */
-    private List<String> visibleLines() {
-        if (!wrap) {
+    private List<String> visibleLines()
+    {
+        if (!wrap)
+        {
             return lines;
         }
         int width = bounds().width();
-        if (displayDirty || width != cachedWidth) {
+        if (displayDirty || width != cachedWidth)
+        {
             displayLines = TextWrap.wrapAll(lines, width);
             cachedWidth = width;
             displayDirty = false;
